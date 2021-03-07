@@ -1,0 +1,1 @@
+export {Protocol} from 'https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/types/protocol.d.ts';
