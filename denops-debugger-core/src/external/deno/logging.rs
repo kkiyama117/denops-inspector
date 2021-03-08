@@ -1,27 +1,23 @@
 use wasm_bindgen::prelude::*;
 
-#[macro_export]
 macro_rules! log_info {
     ($($arg:tt)*) => {
          $crate::external::logging::log_info(&format!($($arg)*))
     };
 }
 
-#[macro_export]
 macro_rules! log_warn {
     ($($arg:tt)*) => {
          $crate::external::logging::log_warn(&format!($($arg)*))
     };
 }
 
-#[macro_export]
 macro_rules! log_error {
     ($($arg:tt)*) => {
          $crate::external::logging::log_error(&format!($($arg)*))
     };
 }
 
-#[macro_export]
 macro_rules! log_debug {
     ($($arg:tt)*) => {
         if cfg!(debug_assertions) {  $crate::external::logging::log_info(&format!($($arg)*)) }

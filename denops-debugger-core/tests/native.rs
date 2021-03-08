@@ -2,10 +2,9 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod tests {
     use denops_debugger_core::external::fetch::*;
-    use denops_debugger_core::v8_types::inspector::version::V8Version;
-    use denops_debugger_core::v8_types::inspector::*;
     use denops_debugger_core::*;
     use std::error::Error;
+    use v8_inspector_api_types::prelude::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn it_works() {

@@ -1,6 +1,6 @@
 [workspace]
 exclude = []
-members = ["denops-debugger-core"]
+members = ["denops-debugger-core", "v8-inspector-api-types"]
 
 [profile.release]
 codegen-units = 1
