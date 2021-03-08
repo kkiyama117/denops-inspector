@@ -1,7 +1,8 @@
 #[macro_use]
 pub(crate) mod logging;
 pub(crate) mod file;
-pub(crate) mod ws_cli;
+pub(crate) mod http;
+pub mod ws_cli;
 
 use anyhow::anyhow;
 use futures::{Future, Sink};
