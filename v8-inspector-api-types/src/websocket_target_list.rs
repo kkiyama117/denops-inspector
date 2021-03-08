@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash, Serialize, Deserialize)]
 pub struct WebSocketConnectionInfo {
     pub description: String,
     #[serde(rename = "devtoolsFrontendUrl")]
