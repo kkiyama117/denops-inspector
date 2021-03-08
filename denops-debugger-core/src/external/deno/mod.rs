@@ -1,7 +1,6 @@
-#[macro_use]
-pub(crate) mod logging;
 pub mod fetch;
 pub(crate) mod file;
+pub mod logging;
 pub mod ws_cli;
 
 use anyhow::anyhow;

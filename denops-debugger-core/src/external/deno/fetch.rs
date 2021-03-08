@@ -9,7 +9,7 @@ extern "C" {
     async fn js_fetch(s: &str) -> Result<JsValue, JsValue>;
 }
 
-pub async fn run(url: &str) -> Result<JsValue, JsValue> {
+pub async fn fetch(url: &str) -> Result<JsValue, JsValue> {
     let resp_value = js_fetch(url).await?;
     let resp: Response = resp_value.into();
     let json = JsFuture::from(resp.json()?).await?;

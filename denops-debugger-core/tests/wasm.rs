@@ -1,7 +1,7 @@
 #[cfg(test)]
 #[cfg(target_arch = "wasm32")]
 mod tests {
-    use denops_debugger_core::external::http::run;
+    use denops_debugger_core::external::fetch::*;
     use denops_debugger_core::external::ws_cli::start_websocket;
     use wasm_bindgen_test::*;
 

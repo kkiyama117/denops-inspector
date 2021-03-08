@@ -1,6 +1,6 @@
 pub mod fetch;
 pub(crate) mod file;
-pub(crate) mod logging;
+pub mod logging;
 pub(crate) mod ws_cli;
 
 use futures::Future;
