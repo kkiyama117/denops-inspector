@@ -24,12 +24,12 @@ macro_rules! log_error {
 #[macro_export]
 macro_rules! log_debug {
     ($($arg:tt)*) => {
-        if cfg!(debug_assertions) {  $crate::external::log_info(&format!($($arg)*)) }
+        if cfg!(debug_assertions) {  $crate::external::logging::log_info(&format!($($arg)*)) }
     };
 }
 
 #[wasm_bindgen]
-extern {
+extern "C" {
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     fn js_log_info(s: &str);
 

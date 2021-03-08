@@ -10,17 +10,31 @@ edition = "2018"
 anyhow = "1"
 futures = { version = "0.3", features = ["thread-pool"] }
 futures-util = "0.3"
+serde = "1.0"
+serde_json = "1.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std", "sync", "net", "time", "process", ] }
 tokio-tungstenite = { version = "0.14.0" }
-tungstenite       = "0.13"
+tungstenite = "0.13"
 clap = "3.0.0-beta.2"
 ctrlc = "3"
 notify = "4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.71", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
 console_error_panic_hook = { version = "0.1" }
 js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+    "BinaryType",
+    "Blob",
+    "ErrorEvent",
+    "FileReader",
+    "MessageEvent",
+    "ProgressEvent",
+    "WebSocket",
+]}
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3.21"

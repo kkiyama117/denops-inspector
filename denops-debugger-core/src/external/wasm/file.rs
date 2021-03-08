@@ -1,7 +1,10 @@
+use anyhow::anyhow;
+use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
 #[wasm_bindgen]
-extern {
+extern "C" {
     #[wasm_bindgen(js_namespace = global, js_name = readFile, catch)]
     async fn js_read_file(path: &str) -> Result<JsValue, JsValue>;
 

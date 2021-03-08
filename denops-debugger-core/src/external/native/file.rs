@@ -1,4 +1,4 @@
-use std::{path::Path, };
+use std::path::Path;
 
 pub(crate) fn is_absolute_path(p: &str) -> bool {
     Path::new(p).is_absolute()

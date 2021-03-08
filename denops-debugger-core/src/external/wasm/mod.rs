@@ -1,6 +1,7 @@
-pub (crate) mod ws_cli;
-pub (crate) mod logging;
-pub (crate) mod file;
+#[macro_use]
+pub(crate) mod logging;
+pub(crate) mod file;
+pub(crate) mod ws_cli;
 
 use anyhow::anyhow;
 use futures::{Future, Sink};
@@ -10,7 +11,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 
 #[wasm_bindgen]
-extern {
+extern "C" {
     #[wasm_bindgen(js_namespace = global, js_name = sendMessage)]
     fn js_send_message(message: JsValue);
 }
@@ -25,10 +26,9 @@ struct ImplSend<T>(pub T);
 unsafe impl<T> Send for ImplSend<T> {}
 unsafe impl<T> Sync for ImplSend<T> {}
 
-
-pub(crate) fn needs_update(p: &str, new_date_ms: u64) -> Result<bool, anyhow::Error> {
-    js_needs_update(p, new_date_ms).map_err(|e| anyhow!("{:?}", e))
-}
+// pub(crate) fn needs_update(p: &str, new_date_ms: u64) -> Result<bool, anyhow::Error> {
+//     js_needs_update(p, new_date_ms).map_err(|e| anyhow!("{:?}", e))
+// }
 
 #[derive(Clone)]
 struct MessageWriter;
