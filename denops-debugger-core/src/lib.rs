@@ -28,7 +28,11 @@ mod tests {
 
     #[wasm_bindgen_test]
     fn it_works() {
-        // run_client("ws://127.0.0.1:9229/ws/8f27e285-769d-4a7d-aef0-55f506bd7fc6").await;
+        wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+        assert_eq!(
+            start_websocket("ws://127.0.0.1:9229/ws/8f27e285-769d-4a7d-aef0-55f506bd7fc6").unwrap(),
+            ()
+        );
         assert_eq!(2 + 2, 4);
     }
 }
