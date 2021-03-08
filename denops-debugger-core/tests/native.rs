@@ -30,6 +30,5 @@ mod tests {
                 .description,
             "deno"
         );
-        assert_eq!(2 + 2, 4);
     }
 }
