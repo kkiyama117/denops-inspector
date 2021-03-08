@@ -4,6 +4,8 @@
 pub mod external;
 
 #[cfg(target_arch = "wasm32")]
-#[path = "external/wasm/mod.rs"]
+#[path = "external/deno/mod.rs"]
 #[macro_use]
 pub mod external;
+
+pub mod v8_types;
