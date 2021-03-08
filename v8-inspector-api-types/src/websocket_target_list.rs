@@ -2,14 +2,14 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WebSocketConnectionInfo {
-    description: String,
+    pub description: String,
     #[serde(rename = "devtoolsFrontendUrl")]
-    devtools_frontend_url: String,
-    id: String,
-    title: String,
+    pub devtools_frontend_url: String,
+    pub id: String,
+    pub title: String,
     #[serde(rename = "type")]
-    _type: String,
-    url: String,
+    pub _type: String,
+    pub url: Option<String>,
     #[serde(rename = "webSocketDebuggerUrl")]
-    web_socket_debugger_url: String,
+    pub web_socket_debugger_url: String,
 }

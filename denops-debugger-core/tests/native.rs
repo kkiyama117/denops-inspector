@@ -13,11 +13,23 @@ mod tests {
                 .await
                 .unwrap()
                 .v8_version,
-            "9.0.257.3"
+            String::from(
+                fetch::<serde_json::Value>("http://localhost:9229/json/version")
+                    .await
+                    .unwrap()
+                    .get("V8-Version")
+                    .unwrap()
+                    .as_str()
+                    .unwrap()
+            )
         );
-        dbg!(fetch::<serde_json::Value>("http://localhost:9229/json")
-            .await
-            .unwrap());
+        assert_eq!(
+            fetch::<Vec<WebSocketConnectionInfo>>("http://localhost:9229/json")
+                .await
+                .unwrap()[0]
+                .description,
+            "deno"
+        );
         assert_eq!(2 + 2, 4);
     }
 }
