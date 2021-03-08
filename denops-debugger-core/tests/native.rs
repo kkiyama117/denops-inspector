@@ -30,5 +30,11 @@ mod tests {
                 .description,
             "deno"
         );
+        dbg!(
+            fetch::<Vec<WebSocketConnectionInfo>>("http://localhost:9229/json")
+                .await
+                .unwrap()
+                .get(0)
+        );
     }
 }
