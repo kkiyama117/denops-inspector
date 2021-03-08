@@ -1,0 +1,13 @@
+[package]
+name = "denops-debugger-cli"
+version = "0.1.0"
+authors = ["kkiyama117 <k.kiyama117@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+denops-debugger-core = { version = "0.1", path = "../denops-debugger-core" }
+v8-inspector-api-types = { version = "0.1", path = "../v8-inspector-api-types" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "io-util", "io-std", "sync", "net", "time", "process", ] }
+
