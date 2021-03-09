@@ -1,5 +1,6 @@
-use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result};
+
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Serialize, Deserialize)]
 pub struct Version {
