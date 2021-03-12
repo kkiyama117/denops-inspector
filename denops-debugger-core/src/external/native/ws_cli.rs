@@ -1,8 +1,8 @@
-use futures::channel::mpsc;
-use futures_util::lock::Mutex;
-use std::sync::atomic::{AtomicBool, AtomicU32};
-use std::sync::Arc;
-use v8_inspector_api_types::prelude::*;
+// use futures::channel::mpsc;
+// use futures_util::lock::Mutex;
+// use std::sync::atomic::{AtomicBool, AtomicU32};
+// use std::sync::Arc;
+// use v8_inspector_api_types::prelude::*;
 use ws::{connect, CloseCode};
 
 // #[derive(Debug)]
@@ -35,8 +35,7 @@ pub fn ws_connection(url: String) {
 
         move |msg| {
             println!("Got message: {}", msg);
-            // out.close(CloseCode::Normal)
-            Ok(())
+            out.close(CloseCode::Normal)
         }
     })
     .unwrap()

@@ -8,10 +8,12 @@ use crate::errors::RemoteError;
 // TODO: Add feature to use only specific mod.
 pub mod browser;
 pub mod errors;
+mod websocket_target_list;
 
 pub mod prelude {
     pub use crate::browser::*;
     pub use crate::errors::*;
+    pub use crate::websocket_target_list::*;
 }
 
 #[derive(Deserialize, Debug, PartialEq, Clone)]

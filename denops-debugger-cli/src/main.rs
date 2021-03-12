@@ -1,5 +1,6 @@
 use denops_debugger_core::external::*;
 use v8_inspector_api_types::browser::Version;
+use v8_inspector_api_types::prelude::WebSocketConnectionInfo;
 
 #[tokio::main]
 async fn main() {
