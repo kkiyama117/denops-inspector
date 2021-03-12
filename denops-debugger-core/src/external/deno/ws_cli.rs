@@ -1,7 +1,8 @@
-use crate::external::logging::log_error;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
+
+use crate::external::logging::log_error;
 
 // #[wasm_bindgen]
 // pub fn start_websocket(url: &str) -> Result<(), JsValue> {

@@ -1,7 +1,6 @@
 use futures_util::{future, SinkExt, StreamExt};
-use tokio_tungstenite::connect_async;
-
 use tokio::io::AsyncWriteExt;
+use tokio_tungstenite::connect_async;
 
 // create single-thread client and send messages.
 pub async fn run_client(url: &str) -> anyhow::Result<()> {
@@ -12,7 +11,7 @@ pub async fn run_client(url: &str) -> anyhow::Result<()> {
     let write_thread = tokio::spawn(async move {
         // send message and wait data
         // write message
-        match writer.send("test".into()).await {
+        match writer.send("tests".into()).await {
             Ok(_) => {}
             Err(_) => {
                 eprintln!("Error caused when writing stream")
