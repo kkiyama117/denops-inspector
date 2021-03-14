@@ -4,6 +4,7 @@ Access to process of denops and debug it.
 WIP
 
 ## Plans
+
 ### crates
 
   - v8-inspector-api-types
@@ -11,3 +12,5 @@ WIP
   - denops-debugger-core
     - handle reader/writer and parse data from v8 engine
   - denops-debugger-cli  
+    - implement websocket client using debugger-core
+    
