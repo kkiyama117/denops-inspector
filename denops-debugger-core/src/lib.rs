@@ -1,6 +1,5 @@
 use async_trait::async_trait;
-use v8_inspector_api_types::browser::Version;
-use v8_inspector_api_types::prelude::WebSocketConnectionInfo;
+use v8_inspector_api_types::prelude::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 #[path = "external/native/mod.rs"]

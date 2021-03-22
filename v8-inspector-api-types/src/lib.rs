@@ -6,15 +6,13 @@ use crate::errors::RemoteError;
 use std::fmt::Debug;
 
 // TODO: Add feature to use only specific mod.
-pub mod browser;
 pub mod errors;
+mod http_methods;
 pub mod types;
-mod websocket_target_list;
 
 pub mod prelude {
-    pub use crate::browser::*;
     pub use crate::errors::*;
-    pub use crate::websocket_target_list::*;
+    pub use crate::http_methods::*;
 }
 
 #[derive(Serialize, Debug)]
