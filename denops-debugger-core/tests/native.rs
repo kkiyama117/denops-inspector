@@ -4,7 +4,6 @@ mod tests {
     use denops_debugger_core::external::fetch::*;
     use std::error::Error;
     use v8_inspector_api_types::browser::Version;
-    use v8_inspector_api_types::http::websocket_target_list::WebSocketConnectionInfo;
     use v8_inspector_api_types::prelude::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
