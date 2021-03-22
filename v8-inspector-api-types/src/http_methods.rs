@@ -22,6 +22,7 @@ impl Display for Version {
         write!(f, "{}", &self.v8_version)
     }
 }
+
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Serialize, Deserialize)]
 pub struct WebSocketConnectionInfo {
     pub description: String,

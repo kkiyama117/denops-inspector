@@ -1,20 +1,7 @@
-// use futures::channel::mpsc;
-// use futures_util::lock::Mutex;
-// use std::sync::atomic::{AtomicBool, AtomicU32};
-// use std::sync::Arc;
-// use v8_inspector_api_types::prelude::*;
+use v8_inspector_api_types::commands;
+use v8_inspector_api_types::prelude::Method;
 use ws::{connect, CloseCode};
 
-// #[derive(Debug)]
-// pub struct Transport {
-//     web_socket_connection: Arc<WebSocketConnection>,
-//     waiting_call_registry: Arc<WaitingCallRegistry>,
-//     listeners: Listeners,
-//     open: Arc<AtomicBool>,
-//     call_id_counter: Arc<AtomicU32>,
-//     loop_shutdown_tx: Mutex<mpsc::Sender<()>>,
-// }
-//
 // impl Transport {
 //     pub fn call_method<C>(
 //         &self,
@@ -26,13 +13,16 @@ use ws::{connect, CloseCode};
 //     {
 //     }
 // }
-struct Conn {}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SessionId(String);
 
 pub fn ws_connection(url: String) {
-    let data = r#"{"method": "Debugger.enable","params": null, "id": 1}"#;
-    // let data = debugger::methods::Enable::to_method_call();
+    let a = commands::Enable {};
+    let data = a.into_method_call(1);
     connect(url, |out| {
-        out.send(data).unwrap();
+        out.send(serde_json::to_string(data.as_ref()).unwrap().as_str())
+            .unwrap();
 
         move |msg| {
             println!("Got message: {}", msg);

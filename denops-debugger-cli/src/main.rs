@@ -1,10 +1,9 @@
+use denops_debugger_core::client::{DebuggerClient, DebuggerClientTrait};
 use denops_debugger_core::external::*;
-use denops_debugger_core::{DebuggerClient, DebuggerClientTrait};
-use v8_inspector_api_types::prelude::*;
 
 #[tokio::main]
 async fn main() {
-    let dc = DebuggerClient::new();
+    let dc = DebuggerClient::default();
     dbg!(dc.check_version().await);
 
     let a = dc.get_worker_list().await;
