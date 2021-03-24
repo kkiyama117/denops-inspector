@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter, Result};
+use url::Url;
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Serialize, Deserialize)]
 pub struct Version {
@@ -12,7 +13,7 @@ pub struct Version {
     #[serde(rename = "V8-Version")]
     pub v8_version: String,
     #[serde(rename = "webSocketDebuggerUrl")]
-    pub web_socket_debugger_url: Option<String>,
+    pub web_socket_debugger_url: Option<Url>,
     #[serde(rename = "WebKit-Version")]
     pub web_kit_version: Option<String>,
 }
@@ -22,18 +23,19 @@ impl Display for Version {
         write!(f, "{}", &self.v8_version)
     }
 }
+
 #[derive(Clone, PartialEq, Eq, Debug, Hash, Serialize, Deserialize)]
 pub struct WebSocketConnectionInfo {
     pub description: String,
     #[serde(rename = "devtoolsFrontendUrl")]
-    pub devtools_frontend_url: String,
+    pub devtools_frontend_url: Url,
     pub id: String,
     pub title: String,
     #[serde(rename = "type")]
     pub _type: String,
-    pub url: Option<String>,
+    pub url: Option<Url>,
     #[serde(rename = "webSocketDebuggerUrl")]
-    pub web_socket_debugger_url: String,
+    pub web_socket_debugger_url: Url,
 }
 
 impl Display for WebSocketConnectionInfo {

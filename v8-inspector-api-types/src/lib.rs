@@ -1,56 +1,21 @@
-use headless_chrome::protocol::types::*;
-use headless_chrome::protocol::CallId;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::errors::RemoteError;
-use std::fmt::Debug;
+use crate::types::JsUInt;
 
 // TODO: Add feature to use only specific mod.
+pub mod commands;
 pub mod errors;
 mod http_methods;
 pub mod types;
 
 pub mod prelude {
+    pub use crate::commands::*;
     pub use crate::errors::*;
     pub use crate::http_methods::*;
 }
 
-#[derive(Serialize, Debug)]
-pub struct MethodCall<T>
-where
-    T: Debug,
-{
-    #[serde(rename = "method")]
-    method_name: &'static str,
-    pub id: CallId,
-    params: T,
-}
-
-impl<T> MethodCall<T>
-where
-    T: Debug,
-{
-    pub fn get_params(&self) -> &T {
-        &self.params
-    }
-}
-
-pub trait Method: Debug {
-    const NAME: &'static str;
-
-    type ReturnObject: serde::de::DeserializeOwned + std::fmt::Debug;
-
-    fn to_method_call(self, call_id: CallId) -> Box<MethodCall<Self>>
-    where
-        Self: std::marker::Sized,
-    {
-        Box::new(MethodCall {
-            id: call_id,
-            params: self,
-            method_name: Self::NAME,
-        })
-    }
-}
+type CallId = JsUInt;
 
 #[derive(Deserialize, Debug, PartialEq, Clone)]
 pub struct Response {
