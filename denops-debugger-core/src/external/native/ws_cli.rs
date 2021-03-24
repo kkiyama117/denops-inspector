@@ -26,8 +26,6 @@ use ws::{connect, CloseCode};
 //     {
 //     }
 // }
-struct Conn {}
-
 pub fn ws_connection(url: String) {
     let data = r#"{"method": "Debugger.enable","params": null, "id": 1}"#;
     // let data = debugger::methods::Enable::to_method_call();
