@@ -8,5 +8,5 @@ async fn main() {
 
     let a = dc.get_worker_list().await;
     println!("{}", &a.get(0).unwrap());
-    ws_cli::ws_connection(String::from(&a.get(0).unwrap().web_socket_debugger_url));
+    ws_cli::ws_connection((&a).get(0).unwrap().web_socket_debugger_url.to_string());
 }
