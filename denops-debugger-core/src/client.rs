@@ -1,60 +1,60 @@
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use url::Url;
-use crate::external::ws::WebSocket;
-use async_trait::async_trait;
 use v8_inspector_api_types::prelude::*;
+use v8_inspector_api_types::Response;
 
-
-pub struct DebuggerClient<S> {
-    url: Url,
-    stream: WebSocketStream<MaybeTlsStream<S>>,
+struct WebSocket {
+    stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>,
+}
+impl WebSocket {
+    pub fn new(stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>) -> Self {
+        WebSocket { stream }
+    }
 }
 
-impl<S: tokio::stream::TcpStream> DebuggerClient<S> {
-    pub async fn new(url: Url) -> Self {
-        let (ws_stream, _) = connect_async(url.clone()).await.expect("Failed to connect");
-        DebuggerClient {
-            url,
-            stream: ws_stream,
-        }
+pub struct DebuggerClient {
+    url: Url,
+    ws: Option<WebSocket>,
+}
+
+impl DebuggerClient {
+    pub fn new(url: Url) -> Self {
+        DebuggerClient { url, ws: None }
     }
 
     fn get_base_url(&self) -> Url {
         self.url.clone()
     }
-}
 
-
-#[async_trait]
-pub trait DebuggerClientTrait {
-    async fn check_version(&self) -> Version;
-    fn open(&self);
-    async fn get_worker_list(&self) -> Vec<WebSocketConnectionInfo>;
-    // async fn send_method<T>(&self, method: Box<dyn Method<ReturnObject = T>>) -> Vec<Response>;
-}
-
-#[async_trait]
-impl DebuggerClientTrait for DebuggerClient<S> {
-    async fn check_version(&self) -> Version {
-        let mut url = self.get_base_url();
-        url.push_str("json/version");
+    pub async fn check_version(&self) -> Version {
+        let url = self.get_base_url();
+        let url = url.join("json/version").unwrap();
         crate::external::fetch::fetch(url).await.unwrap()
     }
 
-    fn open(&self) {
-        unimplemented!()
+    pub async fn open(&mut self) -> Self {
+        let base_list = self.get_worker_list().await;
+        let base = base_list.get(0).unwrap();
+        let (ws_stream, _) = connect_async(base.web_socket_debugger_url.clone())
+            .await
+            .expect("Failed to connect");
+
+        Self {
+            url: self.url.clone(),
+            ws: Some(WebSocket::new(ws_stream)),
+        }
     }
 
     async fn get_worker_list(&self) -> Vec<WebSocketConnectionInfo> {
-        let mut url = self.get_base_url();
-        url.push_str("json");
+        let url = self.get_base_url();
+        let url = url.join("json").unwrap();
         crate::external::fetch::fetch::<Vec<WebSocketConnectionInfo>>(url)
             .await
             .unwrap()
     }
 
-    // async fn send_method<T>(&self, method: Box<dyn Method<ReturnObject = T>>) -> Vec<Response> {
-    //     unimplemented!()
+    // async fn send_method<T:Method>(&self, method: Box<T>) -> Vec<Response> {
+    //     let result = vec![];
+    //     let stream = self.ws.unwrap().
     // }
 }
