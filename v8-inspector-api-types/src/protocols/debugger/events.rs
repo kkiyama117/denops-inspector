@@ -1,6 +1,7 @@
-use crate::runtime::methods::StackTrace;
-use crate::types::JsUInt;
 use serde::Deserialize;
+
+use crate::protocols::runtime::methods::StackTrace;
+use crate::types::JsUInt;
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct ScriptParsed {
@@ -30,7 +31,7 @@ pub struct ScriptParsedParams {
 }
 
 mod test {
-    use crate::debugger::events::ScriptParsed;
+    use crate::protocols::debugger::events::ScriptParsed;
 
     #[test]
     fn can_parse_exception_thrown_event() {

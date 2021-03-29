@@ -1,7 +1,6 @@
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use url::Url;
 use v8_inspector_api_types::prelude::*;
-use v8_inspector_api_types::Response;
 
 struct WebSocket {
     stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>,

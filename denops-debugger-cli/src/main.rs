@@ -15,13 +15,7 @@ use tokio::task::JoinHandle;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use url::Url;
-use v8_inspector_api_types::prelude::methods;
-use v8_inspector_api_types::{
-    methods::{Method, MethodCall},
-    parse_response,
-    prelude::WebSocketConnectionInfo,
-    Message as Msg,
-};
+use v8_inspector_api_types::prelude::{methods, Message as Msg, Method, WebSocketConnectionInfo};
 
 #[derive(Debug)]
 enum TestMsg {
