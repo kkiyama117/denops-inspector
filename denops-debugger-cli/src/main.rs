@@ -1,18 +1,13 @@
 use denops_debugger_core::external::fetch::fetch;
-use futures::prelude::stream::SplitStream;
-use futures_util::{future, SinkExt, StreamExt};
+use futures::channel::mpsc::{channel, Sender};
+use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use std::borrow::Borrow;
 use std::error::Error;
 use std::fmt;
-use std::ops::Deref;
 use std::str::FromStr;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::Sender;
 use tokio::task::JoinHandle;
-use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use url::Url;
 use v8_inspector_api_types::prelude::{methods, Message as Msg, Method, WebSocketConnectionInfo};
@@ -27,7 +22,7 @@ enum TestMsg {
 async fn main() {
     let info = Info::from_str("http://localhost:9229").unwrap();
     let man = Manager::new(info);
-    let b = WebSocketManager::new(man.get_ws_cli().await.unwrap());
+    let mut b = WebSocketManager::new(man.get_ws_cli().await.unwrap());
 
     let a = methods::Enable {};
     let data = a.into_method_call(1);
@@ -121,11 +116,11 @@ struct WebSocketManager {
 impl WebSocketManager {
     pub fn new(stream: WebSocketStream<MaybeTlsStream<TcpStream>>) -> Self {
         let (mut writer, mut reader) = stream.split();
-        let (mut tx, mut rx) = mpsc::channel::<TestMsg>(10);
+        let (mut tx, mut rx) = channel::<TestMsg>(10);
 
         // create thread to manage sending message
         let writer = tokio::spawn(async move {
-            while let Some(data) = rx.recv().await {
+            while let Some(data) = rx.next().await {
                 // write message
                 match data {
                     TestMsg::Msg(data) => match writer.send(data.into()).await {
@@ -146,17 +141,6 @@ impl WebSocketManager {
         let reader = tokio::spawn(async move {
             // pending flush buffer and read message if possible.
             while let Ok(message) = reader.next().await.unwrap() {
-                // let res = message;
-                // match tokio::io::stdout()
-                //     .write_all(format!("{}\n", res).as_bytes())
-                //     .await
-                // {
-                //     Ok(_) => {}
-                //     Err(_) => {
-                //         eprintln!("Error caused when reading stream");
-                //         break;
-                //     }
-                // }
                 let res = serde_json::from_str::<Msg>(message.to_text().unwrap()).unwrap();
                 match res {
                     Msg::Event(eve) => {
