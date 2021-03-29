@@ -5,6 +5,9 @@ use std::sync::atomic::{AtomicBool, AtomicU32};
 use std::sync::Arc;
 use tungstenite::WebSocket as WS;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SessionId(String);
+
 #[derive(Debug)]
 pub struct WebSocket {
     web_socket_connection: Arc<WS<TcpStream>>,
@@ -14,4 +17,3 @@ pub struct WebSocket {
     call_id_counter: Arc<AtomicU32>,
     loop_shutdown_tx: Mutex<mpsc::Sender<()>>,
 }
-//

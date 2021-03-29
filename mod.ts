@@ -2,7 +2,7 @@ const url = Deno.args[0];
 const ws = new WebSocket(url);
 import {Protocol} from "./deps.ts"
 
-// Register event listeners for the open, close, and message events
+// Register event listeners for the open, close, and message events.rs
 ws.onopen = () => {
     console.log("WebSocket ready!");
     let msg = JSON.stringify({

@@ -2,30 +2,25 @@ use crate::types::JsUInt;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
+/// Serialized struct for method call
 #[derive(Serialize, Debug)]
-pub struct MethodCall<T>
-where
-    T: Debug,
-{
+pub struct MethodCall<T> {
     #[serde(rename = "method")]
     method_name: &'static str,
     pub id: JsUInt,
     params: T,
 }
 
-impl<T> MethodCall<T>
-where
-    T: Debug,
-{
+impl<T> MethodCall<T> {
     pub fn get_params(&self) -> &T {
         &self.params
     }
 }
 
-pub trait Method: Debug {
+pub trait Method {
     const NAME: &'static str;
 
-    type ReturnObject: serde::de::DeserializeOwned + std::fmt::Debug;
+    type ReturnObject: serde::de::DeserializeOwned;
 
     fn into_method_call(self, call_id: JsUInt) -> Box<MethodCall<Self>>
     where
@@ -37,16 +32,4 @@ pub trait Method: Debug {
             method_name: Self::NAME,
         })
     }
-}
-
-/// Debugger.Enable
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Enable {}
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EnableReturnObject {}
-impl Method for Enable {
-    const NAME: &'static str = "Debugger.enable";
-    type ReturnObject = EnableReturnObject;
 }
