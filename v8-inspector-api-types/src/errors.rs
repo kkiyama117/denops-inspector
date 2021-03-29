@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 
-use headless_chrome::protocol::types::JsInt;
+use crate::types::JsInt;
 use serde::Deserialize;
 use thiserror::Error;
 

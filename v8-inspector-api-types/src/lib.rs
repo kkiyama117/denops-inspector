@@ -4,20 +4,19 @@ use crate::errors::RemoteError;
 use crate::types::JsUInt;
 
 // TODO: Add feature to use only specific mod.
-pub mod debugger;
 pub mod errors;
 mod http_methods;
 pub mod methods;
-pub mod runtime;
-pub mod target;
+pub mod protocols;
 pub mod types;
 
 pub mod prelude {
-    pub use crate::debugger::*;
     pub use crate::errors::*;
     pub use crate::http_methods::*;
     pub use crate::methods::*;
+    pub use crate::protocols::debugger::*;
 }
+use crate::protocols::*;
 
 type CallId = JsUInt;
 
