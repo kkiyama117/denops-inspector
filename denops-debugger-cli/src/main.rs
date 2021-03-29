@@ -1,26 +1,52 @@
 use denops_debugger_core::external::fetch::fetch;
+use futures::prelude::stream::SplitStream;
 use futures_util::{future, SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::error::Error;
 use std::fmt;
+use std::ops::Deref;
 use std::str::FromStr;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::Sender;
+use tokio::task::JoinHandle;
+use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use url::Url;
-use v8_inspector_api_types::commands;
-use v8_inspector_api_types::prelude::*;
+use v8_inspector_api_types::prelude::methods;
+use v8_inspector_api_types::{
+    methods::{Method, MethodCall},
+    parse_response,
+    prelude::WebSocketConnectionInfo,
+    Message as Msg,
+};
+
+#[derive(Debug)]
+enum TestMsg {
+    Msg(String),
+    Terminate,
+}
 
 #[tokio::main]
 async fn main() {
-    // let mut dc = DebuggerClient::new("http://localhost:9229/".parse().unwrap());
     let info = Info::from_str("http://localhost:9229").unwrap();
     let man = Manager::new(info);
-    println!("{:?}", &man.get_process_list().await.unwrap());
     let b = WebSocketManager::new(man.get_ws_cli().await.unwrap());
-    b.open().await;
 
+    let a = methods::Enable {};
+    let data = a.into_method_call(1);
+    let data = serde_json::to_string(data.as_ref()).unwrap();
+    b.tx.send(TestMsg::Msg(data)).await.unwrap();
+
+    let a = methods::Disable {};
+    let data = a.into_method_call(2);
+    let data = serde_json::to_string(data.as_ref()).unwrap();
+    b.tx.send(TestMsg::Msg(data)).await.unwrap();
+    // b.tx.send(TestMsg::Terminate).await.unwrap();
+
+    b.writer.await.unwrap();
     // dbg!(dc.check_version().await);
 
     // let a = commands::Enable {};
@@ -59,6 +85,7 @@ impl Manager {
         Self { info }
     }
 }
+
 #[derive(Debug)]
 struct ManagerError {}
 impl fmt::Display for ManagerError {
@@ -92,57 +119,88 @@ async fn get_stream(url: Url) -> anyhow::Result<WebSocketStream<MaybeTlsStream<T
 }
 
 struct WebSocketManager {
-    stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>,
+    tx: Sender<TestMsg>,
+    reader: JoinHandle<()>,
+    writer: JoinHandle<()>,
 }
 
 impl WebSocketManager {
-    pub fn new(stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>) -> Self {
-        WebSocketManager { stream }
-    }
-
-    pub async fn open(self) {
-        let a = commands::Enable {};
-        let data = a.into_method_call(1);
-        let (mut writer, mut reader) = self.stream.split();
+    pub fn new(stream: WebSocketStream<MaybeTlsStream<TcpStream>>) -> Self {
+        let (mut writer, mut reader) = stream.split();
+        let (mut tx, mut rx) = mpsc::channel::<TestMsg>(10);
 
         // create thread to manage sending message
-        let write_thread = tokio::spawn(async move {
-            // send message and wait data
-            // write message
-            match writer
-                .send(serde_json::to_string(data.as_ref()).unwrap().into())
-                .await
-            {
-                Ok(_) => {}
-                Err(_) => {
-                    eprintln!("Error caused when writing stream")
+        let writer = tokio::spawn(async move {
+            while let Some(data) = rx.recv().await {
+                // write message
+                match data {
+                    TestMsg::Msg(data) => match writer.send(data.into()).await {
+                        Ok(_) => {}
+                        Err(_) => {
+                            eprintln!("Error caused when writing stream");
+                        }
+                    },
+                    TestMsg::Terminate => {
+                        rx.close();
+                        writer.close().await;
+                    }
                 }
             }
         });
 
         // create thread to manage reading message
-        let read_thread = tokio::spawn(async move {
+        let reader = tokio::spawn(async move {
             // pending flush buffer and read message if possible.
-            let message = reader.next().await.unwrap().unwrap();
-            match tokio::io::stdout()
-                .write_all(format!("recv[]: {}\n", message).as_bytes())
-                .await
-            {
-                Ok(_) => {}
-                Err(_) => {
-                    eprintln!("Error caused when reading stream")
+            while let Ok(message) = reader.next().await.unwrap() {
+                // let res = message;
+                // match tokio::io::stdout()
+                //     .write_all(format!("{}\n", res).as_bytes())
+                //     .await
+                // {
+                //     Ok(_) => {}
+                //     Err(_) => {
+                //         eprintln!("Error caused when reading stream");
+                //         break;
+                //     }
+                // }
+                let res = serde_json::from_str::<Msg>(message.to_text().unwrap()).unwrap();
+                match res {
+                    Msg::Event(eve) => {
+                        match tokio::io::stdout()
+                            .write_all(format!("recv[]: {:?}\n", eve).as_bytes())
+                            .await
+                        {
+                            Ok(_) => {}
+                            Err(_) => {
+                                eprintln!("Error caused when reading stream");
+                                break;
+                            }
+                        }
+                    }
+                    Msg::Response(res) => {
+                        match tokio::io::stdout()
+                            .write_all(format!("recv[]: {:?}\n", res).as_bytes())
+                            .await
+                        {
+                            Ok(_) => {}
+                            Err(_) => {
+                                eprintln!("Error caused when reading stream");
+                                break;
+                            }
+                        }
+                    }
+                    Msg::ConnectionShutdown => {
+                        break;
+                    }
                 }
             }
         });
-        // run all threads.
-        let res = future::try_join(write_thread, read_thread).await;
-        match res {
-            Ok((_, _)) => {
-                println!("successfully finished");
-            }
-            Err(e) => {
-                eprintln!("Error in thread=>\n{}", e);
-            }
-        }
+
+        WebSocketManager { tx, reader, writer }
+    }
+
+    pub async fn shutdown(self) {
+        self.writer.await.unwrap();
+        self.reader.abort();
     }
 }

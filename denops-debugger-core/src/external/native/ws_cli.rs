@@ -1,4 +1,4 @@
-use v8_inspector_api_types::commands;
+use v8_inspector_api_types::prelude::methods::Enable;
 use v8_inspector_api_types::prelude::Method;
 use ws::{connect, CloseCode};
 
@@ -15,7 +15,7 @@ use ws::{connect, CloseCode};
 // }
 
 pub fn ws_connection(url: String) {
-    let a = commands::Enable {};
+    let a = Enable {};
     let data = a.into_method_call(1);
     connect(url, |out| {
         out.send(serde_json::to_string(data.as_ref()).unwrap().as_str())

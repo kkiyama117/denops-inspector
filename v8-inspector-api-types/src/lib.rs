@@ -4,15 +4,19 @@ use crate::errors::RemoteError;
 use crate::types::JsUInt;
 
 // TODO: Add feature to use only specific mod.
-pub mod commands;
+pub mod debugger;
 pub mod errors;
 mod http_methods;
+pub mod methods;
+pub mod runtime;
+pub mod target;
 pub mod types;
 
 pub mod prelude {
-    pub use crate::commands::*;
+    pub use crate::debugger::*;
     pub use crate::errors::*;
     pub use crate::http_methods::*;
+    pub use crate::methods::*;
 }
 
 type CallId = JsUInt;
@@ -42,25 +46,27 @@ where
 #[serde(tag = "method")]
 #[allow(clippy::large_enum_variant)]
 pub enum Event {
-    /*
-#[serde(rename = "Target.attachedToTarget")]
-AttachedToTarget(target::events::AttachedToTargetEvent),
-#[serde(rename = "Target.receivedMessageFromTarget")]
-ReceivedMessageFromTarget(target::events::ReceivedMessageFromTargetEvent),
-#[serde(rename = "Target.targetInfoChanged")]
-TargetInfoChanged(target::events::TargetInfoChangedEvent),
-#[serde(rename = "Target.targetCreated")]
-TargetCreated(target::events::TargetCreatedEvent),
-#[serde(rename = "Target.targetDestroyed")]
-TargetDestroyed(target::events::TargetDestroyedEvent),
-#[serde(rename = "Network.requestIntercepted")]
-RequestIntercepted(network::events::RequestInterceptedEvent),
-#[serde(rename = "Network.responseReceived")]
-ResponseReceived(network::events::ResponseReceivedEvent),
-#[serde(rename = "Log.entryAdded")]
-LogEntryAdded(logs::events::EntryAddedEvent),
-#[serde(rename = "Runtime.exceptionThrown")]
-RuntimeExceptionThrown(runtime::events::ExceptionThrownEvent),*/}
+    #[serde(rename = "Debugger.scriptParsed")]
+    ScriptParsed(debugger::events::ScriptParsed),
+    #[serde(rename = "Target.attachedToTarget")]
+    AttachedToTarget(target::events::AttachedToTargetEvent),
+    #[serde(rename = "Target.receivedMessageFromTarget")]
+    ReceivedMessageFromTarget(target::events::ReceivedMessageFromTargetEvent),
+    #[serde(rename = "Target.targetInfoChanged")]
+    TargetInfoChanged(target::events::TargetInfoChangedEvent),
+    #[serde(rename = "Target.targetCreated")]
+    TargetCreated(target::events::TargetCreatedEvent),
+    #[serde(rename = "Target.targetDestroyed")]
+    TargetDestroyed(target::events::TargetDestroyedEvent),
+    // #[serde(rename = "Network.requestIntercepted")]
+    // RequestIntercepted(network::events.rs::RequestInterceptedEvent),
+    // #[serde(rename = "Network.responseReceived")]
+    // ResponseReceived(network::events.rs::ResponseReceivedEvent),
+    // #[serde(rename = "Log.entryAdded")]
+    // LogEntryAdded(logs::events.rs::EntryAddedEvent),
+    // #[serde(rename = "Runtime.exceptionThrown")]
+    // RuntimeExceptionThrown(runtime::events.rs::ExceptionThrownEvent),
+}
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
