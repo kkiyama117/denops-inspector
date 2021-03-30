@@ -10,6 +10,7 @@ pub mod fetch;
 pub(crate) mod file;
 #[macro_use]
 pub mod logging;
+pub mod ws;
 pub mod ws_cli;
 
 #[wasm_bindgen]

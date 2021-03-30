@@ -1,59 +1,74 @@
-use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
+use crate::external::fetch::fetch;
+use crate::external::ws_cli::{get_stream, WSStream};
+use async_trait::async_trait;
+use notify::Op;
+use std::error::Error;
+use std::fmt;
 use url::Url;
-use v8_inspector_api_types::prelude::*;
+use v8_inspector_api_types::http_methods::{Version, WebSocketConnectionInfo};
 
-struct WebSocket {
-    stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>,
-}
-impl WebSocket {
-    pub fn new(stream: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>) -> Self {
-        WebSocket { stream }
-    }
+#[async_trait]
+pub trait HTTPManager {
+    async fn get_worker_list(&self) -> Option<Vec<WebSocketConnectionInfo>>;
 }
 
-pub struct DebuggerClient {
+pub struct Manager {
     url: Url,
-    ws: Option<WebSocket>,
 }
 
-impl DebuggerClient {
+impl Manager {
     pub fn new(url: Url) -> Self {
-        DebuggerClient { url, ws: None }
+        Self { url }
     }
 
-    fn get_base_url(&self) -> Url {
-        self.url.clone()
+    pub fn from_string(value: impl ToString) -> Option<Self> {
+        let url = Url::parse(value.to_string().as_str()).ok()?;
+        Some(Self { url })
     }
+}
 
-    pub async fn check_version(&self) -> Version {
-        let url = self.get_base_url();
-        let url = url.join("json/version").unwrap();
-        crate::external::fetch::fetch(url).await.unwrap()
+#[derive(Debug)]
+struct ManagerError {}
+impl fmt::Display for ManagerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Manager Error")
     }
+}
+impl Error for ManagerError {}
 
-    pub async fn open(&mut self) -> Self {
-        let base_list = self.get_worker_list().await;
-        let base = base_list.get(0).unwrap();
-        let (ws_stream, _) = connect_async(base.web_socket_debugger_url.clone())
-            .await
-            .expect("Failed to connect");
-
-        Self {
-            url: self.url.clone(),
-            ws: Some(WebSocket::new(ws_stream)),
+impl Manager {
+    pub async fn check_version(&self) -> Option<Version> {
+        if let Ok(url) = &self.url.join("json/version") {
+            crate::external::fetch::fetch(url.clone()).await.ok()
+        } else {
+            None
         }
     }
+}
 
-    async fn get_worker_list(&self) -> Vec<WebSocketConnectionInfo> {
-        let url = self.get_base_url();
-        let url = url.join("json").unwrap();
-        crate::external::fetch::fetch::<Vec<WebSocketConnectionInfo>>(url)
-            .await
-            .unwrap()
+#[async_trait]
+impl HTTPManager for Manager {
+    async fn get_worker_list(&self) -> Option<Vec<WebSocketConnectionInfo>> {
+        if let Ok(url) = self.url.join("json") {
+            match fetch::<Vec<WebSocketConnectionInfo>>(url).await {
+                Ok(v) => Some(v),
+                Err(_) => None,
+            }
+        } else {
+            None
+        }
     }
+}
 
-    // async fn send_method<T:Method>(&self, method: Box<T>) -> Vec<Response> {
-    //     let result = vec![];
-    //     let stream = self.ws.unwrap().
+pub async fn get_ws_cli(manager: impl HTTPManager) -> Option<WSStream> {
+    let processes = manager.get_worker_list().await.unwrap();
+    if let Some(p) = processes.get(0) {
+        get_stream(p.clone().web_socket_debugger_url).await.ok()
+    } else {
+        None
+    }
+    // match process {
+    //     None => Err((ManagerError {}).into()),
+    //     Some(p) => Ok(get_stream(p.web_socket_debugger_url.clone()).await?),
     // }
 }
