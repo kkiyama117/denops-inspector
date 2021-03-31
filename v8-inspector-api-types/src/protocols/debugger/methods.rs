@@ -21,6 +21,18 @@ pub struct Disable {}
 #[serde(rename_all = "camelCase")]
 pub struct DisableReturnObject {}
 impl Method for Disable {
-    const NAME: &'static str = "Debugger.enable";
+    const NAME: &'static str = "Debugger.disable";
     type ReturnObject = DisableReturnObject;
+}
+
+/// Debugger.Enable
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Resume {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumeReturnObject {}
+impl Method for Resume {
+    const NAME: &'static str = "Debugger.resume";
+    type ReturnObject = ResumeReturnObject;
 }

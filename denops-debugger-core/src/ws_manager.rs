@@ -52,10 +52,10 @@ impl WebSocketManager {
                     if let Ok(res) = serde_json::from_str::<Message>(message.to_text().unwrap()) {
                         match res {
                             Message::Event(eve) => {
-                                log_info!("recv[]: {:?}\n", eve);
+                                log_info!("recv[]: {:?}", eve);
                             }
                             Message::Response(res) => {
-                                log_info!("recv[]: {:?}\n", res);
+                                log_info!("recv[]: {:?}", res);
                             }
                             Message::ConnectionShutdown => {
                                 break 'outer;

@@ -38,6 +38,11 @@ async fn main() {
 
         sleep(Duration::from_millis(1000)).await;
         tx.send(TestMsg::Msg(data)).await.unwrap();
+
+        let command = methods::Resume {};
+        let data = command.into_method_call(2);
+        let data = serde_json::to_string(data.as_ref()).unwrap();
+        tx.send(TestMsg::Msg(data)).await.unwrap();
         sleep(Duration::from_millis(5000)).await;
 
         stx.send(true).await.unwrap();
