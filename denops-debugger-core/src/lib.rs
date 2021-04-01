@@ -9,4 +9,5 @@ pub(crate) mod external;
 pub(crate) mod external;
 
 pub mod client;
+pub mod errors;
 pub mod ws_manager;

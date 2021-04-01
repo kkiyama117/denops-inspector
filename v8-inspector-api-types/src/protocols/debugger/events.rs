@@ -1,16 +1,51 @@
 use serde::Deserialize;
 
-use crate::protocols::runtime::methods::StackTrace;
-use crate::types::JsUInt;
+use crate::protocols::debugger::types::{BreakPointId, CallFrame, DebugSymbols, Location};
+use crate::protocols::runtime::methods::{StackTrace, StackTraceId};
+use crate::types::{JsUInt, ScriptId};
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
-pub struct ScriptParsed {
-    pub params: ScriptParsedParams,
+pub struct BreakpointResolved {
+    pub params: BreakpointResolvedParams,
 }
+
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct ScriptParsedParams {
-    pub script_id: String,
+pub struct BreakpointResolvedParams {
+    breakpoint_id: BreakPointId,
+    location: Location,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct Paused {
+    pub params: PausedParams,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PausedParams {
+    pub call_frames: Vec<CallFrame>,
+    pub reason: String,
+    pub data: Option<serde_json::Value>,
+    pub hit_breakpoints: Option<Vec<String>>,
+    pub async_stack_trace: Option<StackTrace>,
+    pub async_stack_trace_id: Option<StackTraceId>,
+    #[deprecated]
+    pub(crate) async_call_stack_trace_id: Option<StackTraceId>,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct Resumed {}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct ScriptFailedToParse {
+    pub params: ScriptFailedToParseParams,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ScriptFailedToParseParams {
+    pub script_id: ScriptId,
     pub url: String,
     pub start_line: JsUInt,
     pub start_column: JsUInt,
@@ -18,15 +53,47 @@ pub struct ScriptParsedParams {
     pub end_column: JsUInt,
     pub execution_context_id: JsUInt,
     pub hash: String,
-    pub is_live_edit: bool,
+    pub execution_context_aux_data: Option<serde_json::Value>,
     #[serde(rename = "sourceMapURL")]
-    pub source_map_url: String,
+    pub source_map_url: Option<String>,
     #[serde(rename = "hasSourceURL")]
-    pub has_source_url: bool,
-    pub is_module: bool,
-    pub length: JsUInt,
-    pub stack_trace: StackTrace,
-    pub script_language: String,
+    pub has_source_url: Option<bool>,
+    pub is_module: Option<bool>,
+    pub length: Option<JsUInt>,
+    pub stack_trace: Option<StackTrace>,
+    pub code_offset: Option<JsUInt>,
+    pub script_language: Option<String>,
+    pub embedder_name: String,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+pub struct ScriptParsed {
+    pub params: ScriptParsedParams,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ScriptParsedParams {
+    pub script_id: ScriptId,
+    pub url: String,
+    pub start_line: JsUInt,
+    pub start_column: JsUInt,
+    pub end_line: JsUInt,
+    pub end_column: JsUInt,
+    pub execution_context_id: JsUInt,
+    pub hash: String,
+    pub execution_context_aux_data: Option<serde_json::Value>,
+    pub is_live_edit: Option<bool>,
+    #[serde(rename = "sourceMapURL")]
+    pub source_map_url: Option<String>,
+    #[serde(rename = "hasSourceURL")]
+    pub has_source_url: Option<bool>,
+    pub is_module: Option<bool>,
+    pub length: Option<JsUInt>,
+    pub stack_trace: Option<StackTrace>,
+    pub code_offset: Option<JsUInt>,
+    pub script_language: Option<String>,
+    pub debug_symbols: Option<DebugSymbols>,
     pub embedder_name: String,
 }
 

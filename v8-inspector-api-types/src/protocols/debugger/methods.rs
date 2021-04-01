@@ -1,9 +1,15 @@
 use crate::methods::Method;
+use crate::protocols::debugger::types::{CallFrameId, Location};
+use crate::protocols::runtime::events::TimeDelta;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ContinueToLocation {}
+pub struct ContinueToLocation {
+    location: Location,
+    target_call_frames: Option<String>,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ContinueToLocationReturnObject {}
@@ -36,7 +42,18 @@ impl Method for Disable {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct EvaluateOnCallFrame {}
+pub struct EvaluateOnCallFrame {
+    call_frame_id: CallFrameId,
+    expression: String,
+    object_group: String,
+    #[serde(rename = "includeCommandLineAPI")]
+    include_command_line_api: Option<bool>,
+    silent: Option<String>,
+    return_by_value: Option<bool>,
+    generate_preview: Option<bool>,
+    throw_on_side_effect: Option<bool>,
+    timeout: Option<TimeDelta>,
+}
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvaluateOnCallFrameReturnObject {}
@@ -56,7 +73,30 @@ impl Method for GetPossibleBreakpoints {
     type ReturnObject = GetPossibleBreakpointsReturnObject;
 }
 
-/// Debugger.Enable
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Pause {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PauseReturnObject {}
+impl Method for Pause {
+    const NAME: &'static str = "Debugger.pause";
+    type ReturnObject = PauseReturnObject;
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SetSkipAllPauses {
+    pub skip: bool,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetSkipAllPausesReturnObject {}
+impl Method for SetSkipAllPauses {
+    const NAME: &'static str = "Debugger.setSkipAllPauses";
+    type ReturnObject = SetSkipAllPausesReturnObject;
+}
+
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Resume {}

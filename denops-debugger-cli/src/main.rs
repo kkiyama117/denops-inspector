@@ -10,7 +10,7 @@ use v8_inspector_api_types::{methods::Method, protocols::debugger::methods};
 
 #[tokio::main]
 async fn main() {
-    let (stx, srx) = channel::<bool>(1);
+    let (mut stx, srx) = channel::<bool>(1);
     let (mut tx, rx) = channel::<TestMsg>(10);
 
     let man = Manager::from_string("http://localhost:9229").unwrap();
@@ -24,15 +24,25 @@ async fn main() {
         sleep(Duration::from_millis(1000)).await;
         tx.send(TestMsg::Msg(data)).await.unwrap();
 
-        let command = methods::GetPossibleBreakpoints {};
+        let command = methods::SetSkipAllPauses { skip: true };
         let data = command.into_method_call(2);
         let data = serde_json::to_string(data.as_ref()).unwrap();
         tx.send(TestMsg::Msg(data)).await.unwrap();
-        sleep(Duration::from_millis(5000)).await;
+        sleep(Duration::from_millis(3000)).await;
 
-        // stx.send(true).await.unwrap();
-        // tx.send(TestMsg::Terminate).await.unwrap();
-        // sleep(Duration::from_millis(1000)).await;
+        let command = methods::Pause {};
+        let data = command.into_method_call(3);
+        let data = serde_json::to_string(data.as_ref()).unwrap();
+        tx.send(TestMsg::Msg(data)).await.unwrap();
+        let command = methods::Resume {};
+        let data = command.into_method_call(4);
+        let data = serde_json::to_string(data.as_ref()).unwrap();
+        tx.send(TestMsg::Msg(data)).await.unwrap();
+        sleep(Duration::from_millis(10000)).await;
+
+        stx.send(true).await.unwrap();
+        tx.send(TestMsg::Terminate).await.unwrap();
+        sleep(Duration::from_millis(1000)).await;
     };
     let _ = tokio::join!(b.reader, b.writer, main_thread);
     // run all threads.

@@ -1,6 +1,6 @@
 pub mod methods {
     use crate::methods::Method;
-    use crate::types::{JsInt, ScriptId, UniqueDebuggerId};
+    use crate::types::{JsInt, JsUInt, ScriptId, UniqueDebuggerId};
     use serde::{Deserialize, Serialize};
 
     #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
@@ -109,8 +109,8 @@ pub mod methods {
         function_name: String,
         script_id: ScriptId,
         url: String,
-        line_number: JsInt,
-        column_number: JsInt,
+        line_number: JsUInt,
+        column_number: JsUInt,
     }
 
     #[derive(Serialize, Debug, Default)]
@@ -179,7 +179,7 @@ pub mod methods {
 
 pub mod events {
     use super::methods::{RemoteObject, StackTrace};
-    use crate::types::{JsInt, ScriptId};
+    use crate::types::{JsInt, JsUInt, ScriptId};
     use serde::{Deserialize, Serialize};
 
     /// Issued when exception was thrown and unhandled
@@ -198,13 +198,13 @@ pub mod events {
     pub struct ExceptionDetails {
         pub exception_id: JsInt,
         pub text: String,
-        pub line_number: JsInt,
-        pub column_number: JsInt,
+        pub line_number: JsUInt,
+        pub column_number: JsUInt,
         pub script_id: Option<ScriptId>,
         pub url: Option<String>,
         pub stack_trace: Option<StackTrace>,
         pub exception: Option<RemoteObject>,
-        pub execution_context_id: Option<JsInt>,
+        pub execution_context_id: Option<JsUInt>,
     }
 
     #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -212,6 +212,8 @@ pub mod events {
     pub struct ExceptionThrownEvent {
         pub params: ExceptionThrown,
     }
+
+    pub type TimeDelta = JsUInt;
 
     #[test]
     fn can_parse_exception_thrown_event() {

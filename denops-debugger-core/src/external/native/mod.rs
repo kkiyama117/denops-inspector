@@ -6,8 +6,12 @@ pub(crate) mod file;
 pub mod logging;
 pub mod ws_cli;
 
-pub(crate) fn spawn<F: Future<Output = ()> + Send + 'static>(fut: F) -> JoinHandle<()> {
-    tokio::spawn(fut)
+pub fn spawn<T>(task: T) -> JoinHandle<T::Output>
+where
+    T: Future + Send + 'static,
+    T::Output: Send + 'static,
+{
+    tokio::spawn(task)
 }
 
 pub(crate) type JoinHandle<T> = tokio::task::JoinHandle<T>;

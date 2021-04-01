@@ -31,6 +31,14 @@ where
 #[serde(tag = "method")]
 #[allow(clippy::large_enum_variant)]
 pub enum Event {
+    #[serde(rename = "Debugger.breakpointResolved")]
+    BreakpointResolved(debugger::events::BreakpointResolved),
+    #[serde(rename = "Debugger.paused")]
+    Paused(debugger::events::Paused),
+    #[serde(rename = "Debugger.resumed")]
+    Resumed(debugger::events::Resumed),
+    #[serde(rename = "Debugger.scriptParsedFailedToParse")]
+    ScriptFailedToParse(debugger::events::ScriptFailedToParse),
     #[serde(rename = "Debugger.scriptParsed")]
     ScriptParsed(debugger::events::ScriptParsed),
     // #[serde(rename = "Target.attachedToTarget")]
