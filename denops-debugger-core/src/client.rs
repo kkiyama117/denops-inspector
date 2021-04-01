@@ -1,8 +1,10 @@
 use crate::external::fetch::fetch;
 use crate::external::ws_cli::{get_stream, WSStream};
 use async_trait::async_trait;
+use futures::Future;
 use std::error::Error;
 use std::fmt;
+use std::pin::Pin;
 use url::Url;
 use v8_inspector_api_types::http_methods::{Version, WebSocketConnectionInfo};
 
@@ -28,11 +30,13 @@ impl Manager {
 
 #[derive(Debug)]
 struct ManagerError {}
+
 impl fmt::Display for ManagerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Manager Error")
     }
 }
+
 impl Error for ManagerError {}
 
 impl Manager {
@@ -58,10 +62,17 @@ impl HTTPManager for Manager {
         }
     }
 }
+type WSCliSelectTask =
+    Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + 'static + Send>>;
 
-pub async fn get_ws_cli(manager: impl HTTPManager) -> Option<WSStream> {
-    let processes = manager.get_worker_list().await.unwrap();
-    if let Some(p) = processes.get(0) {
+pub async fn get_ws_cli<F>(manager: impl HTTPManager, selector: F) -> Option<WSStream>
+where
+    // F: Fn(Vec<WebSocketConnectionInfo>) -> Option<WebSocketConnectionInfo>,
+    F: FnOnce(Vec<WebSocketConnectionInfo>) -> WSCliSelectTask,
+{
+    let processes = manager.get_worker_list().await?;
+    if let Some(p) = selector(processes).await {
+        log_info!("{:?}", p.clone());
         get_stream(p.clone().web_socket_debugger_url).await.ok()
     } else {
         None
