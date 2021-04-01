@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::errors::RemoteError;
-use crate::protocols::{debugger, target};
+use crate::protocols::debugger;
 use crate::types::JsUInt;
 
 type CallId = JsUInt;
@@ -33,16 +33,16 @@ where
 pub enum Event {
     #[serde(rename = "Debugger.scriptParsed")]
     ScriptParsed(debugger::events::ScriptParsed),
-    #[serde(rename = "Target.attachedToTarget")]
-    AttachedToTarget(target::events::AttachedToTargetEvent),
-    #[serde(rename = "Target.receivedMessageFromTarget")]
-    ReceivedMessageFromTarget(target::events::ReceivedMessageFromTargetEvent),
-    #[serde(rename = "Target.targetInfoChanged")]
-    TargetInfoChanged(target::events::TargetInfoChangedEvent),
-    #[serde(rename = "Target.targetCreated")]
-    TargetCreated(target::events::TargetCreatedEvent),
-    #[serde(rename = "Target.targetDestroyed")]
-    TargetDestroyed(target::events::TargetDestroyedEvent),
+    // #[serde(rename = "Target.attachedToTarget")]
+    // AttachedToTarget(target::events::AttachedToTargetEvent),
+    // #[serde(rename = "Target.receivedMessageFromTarget")]
+    // ReceivedMessageFromTarget(target::events::ReceivedMessageFromTargetEvent),
+    // #[serde(rename = "Target.targetInfoChanged")]
+    // TargetInfoChanged(target::events::TargetInfoChangedEvent),
+    // #[serde(rename = "Target.targetCreated")]
+    // TargetCreated(target::events::TargetCreatedEvent),
+    // #[serde(rename = "Target.targetDestroyed")]
+    // TargetDestroyed(target::events::TargetDestroyedEvent),
     // #[serde(rename = "Network.requestIntercepted")]
     // RequestIntercepted(network::events.rs::RequestInterceptedEvent),
     // #[serde(rename = "Network.responseReceived")]

@@ -1,7 +1,17 @@
 use crate::methods::Method;
 use serde::{Deserialize, Serialize};
 
-/// Debugger.Enable
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ContinueToLocation {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContinueToLocationReturnObject {}
+impl Method for ContinueToLocation {
+    const NAME: &'static str = "Debugger.continueToLocation";
+    type ReturnObject = ContinueToLocationReturnObject;
+}
+
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Enable {}
@@ -13,7 +23,6 @@ impl Method for Enable {
     type ReturnObject = EnableReturnObject;
 }
 
-/// Debugger.Enable
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Disable {}
@@ -23,6 +32,28 @@ pub struct DisableReturnObject {}
 impl Method for Disable {
     const NAME: &'static str = "Debugger.disable";
     type ReturnObject = DisableReturnObject;
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct EvaluateOnCallFrame {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EvaluateOnCallFrameReturnObject {}
+impl Method for EvaluateOnCallFrame {
+    const NAME: &'static str = "Debugger.evaluateOnCallFrame ";
+    type ReturnObject = EvaluateOnCallFrameReturnObject;
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GetPossibleBreakpoints {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetPossibleBreakpointsReturnObject {}
+impl Method for GetPossibleBreakpoints {
+    const NAME: &'static str = "Debugger.getPossibleBreakpoints ";
+    type ReturnObject = GetPossibleBreakpointsReturnObject;
 }
 
 /// Debugger.Enable

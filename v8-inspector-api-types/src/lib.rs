@@ -1,6 +1,3 @@
-use crate::errors::RemoteError;
-use crate::types::JsUInt;
-
 // TODO: Add feature to use only specific mod.
 pub mod errors;
 pub mod http_methods;

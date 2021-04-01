@@ -1,7 +1,6 @@
 use crate::external::fetch::fetch;
 use crate::external::ws_cli::{get_stream, WSStream};
 use async_trait::async_trait;
-use notify::Op;
 use std::error::Error;
 use std::fmt;
 use url::Url;

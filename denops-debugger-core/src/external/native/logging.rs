@@ -3,7 +3,7 @@ use tokio::io::AsyncWriteExt;
 #[macro_export]
 macro_rules! log_info {
     ($($arg:tt)*) => {
-        eprintln!($($arg)*)
+        println!($($arg)*)
     };
 }
 

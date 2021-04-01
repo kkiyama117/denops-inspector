@@ -1,6 +1,5 @@
-use crate::external::logging::*;
 use crate::external::ws_cli::WSStream;
-use crate::external::JoinHandle;
+use crate::external::{spawn, JoinHandle};
 use futures::channel::mpsc::Receiver;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use v8_inspector_api_types::messages::Message;
@@ -25,7 +24,7 @@ impl WebSocketManager {
         let (mut writer, mut reader) = stream.split();
 
         // create thread to manage sending message
-        let mut writer = tokio::spawn(async move {
+        let writer = spawn(async move {
             'outer: while let Some(data) = rx.next().await {
                 // write message
                 match data {
@@ -37,7 +36,12 @@ impl WebSocketManager {
                     },
                     TestMsg::Terminate => {
                         rx.close();
-                        writer.close().await;
+                        match writer.close().await {
+                            Ok(_) => {}
+                            Err(_) => {
+                                log_error!("Error occurred in closing websocket!")
+                            }
+                        }
                         break 'outer;
                     }
                 }
@@ -45,7 +49,7 @@ impl WebSocketManager {
         });
 
         // create thread to manage reading message
-        let mut reader = tokio::spawn(async move {
+        let reader = spawn(async move {
             // pending flush buffer and read message if possible.
             'outer: loop {
                 if let Some(message) = reader.try_next().await.unwrap() {
@@ -63,19 +67,20 @@ impl WebSocketManager {
                         }
                     }
                 } else {
-                    eprintln!("Error caused when reading stream");
+                    log_error!("Error caused when reading stream");
                 }
+                // check received shutdown message or not.
                 if let Ok(msg) = shutdown_rx.try_next() {
                     if let Some(msg) = msg {
                         if msg {
                             break 'outer;
                         }
                     } else {
-                        eprintln!("waiting ...");
+                        log_error!("waiting ...");
                     }
                 }
             }
-            eprintln!("fin...");
+            log_info!("fin...");
         });
 
         WebSocketManager { reader, writer }

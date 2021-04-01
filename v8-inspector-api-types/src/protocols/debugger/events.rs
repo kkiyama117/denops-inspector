@@ -19,9 +19,9 @@ pub struct ScriptParsedParams {
     pub execution_context_id: JsUInt,
     pub hash: String,
     pub is_live_edit: bool,
-    #[serde(rename(deserialize = "sourceMapURL"))]
+    #[serde(rename = "sourceMapURL")]
     pub source_map_url: String,
-    #[serde(rename(deserialize = "hasSourceURL"))]
+    #[serde(rename = "hasSourceURL")]
     pub has_source_url: bool,
     pub is_module: bool,
     pub length: JsUInt,
@@ -31,8 +31,6 @@ pub struct ScriptParsedParams {
 }
 
 mod test {
-    use crate::protocols::debugger::events::ScriptParsed;
-
     #[test]
     fn can_parse_exception_thrown_event() {
         let message = r#"{
@@ -68,6 +66,8 @@ mod test {
    }
    "#;
 
-        let _result = serde_json::from_str::<ScriptParsed>(message).unwrap();
+        let _result =
+            serde_json::from_str::<crate::protocols::debugger::events::ScriptParsed>(message)
+                .unwrap();
     }
 }
