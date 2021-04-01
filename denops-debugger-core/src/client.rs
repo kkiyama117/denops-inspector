@@ -1,5 +1,5 @@
 use crate::external::fetch::fetch;
-use crate::external::ws_cli::{get_stream, WSStream};
+use crate::external::ws_cli::WSStream;
 use async_trait::async_trait;
 use futures::Future;
 use std::error::Error;
@@ -8,9 +8,27 @@ use std::pin::Pin;
 use url::Url;
 use v8_inspector_api_types::http_methods::{Version, WebSocketConnectionInfo};
 
+// type WSCliSelectTask =
+//     Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + 'static + Send>>;
+
+/// You can implement HTTP manager for your own because of this trait is used instead of concrete types.
 #[async_trait]
 pub trait HTTPManager {
     async fn get_worker_list(&self) -> Option<Vec<WebSocketConnectionInfo>>;
+    async fn get_ws_cli<F>(manager: impl HTTPManager, selector: F) -> Option<WSStream>
+    where
+        F: Fn(Vec<WebSocketConnectionInfo>) -> Option<WebSocketConnectionInfo>;
+}
+
+#[derive(Debug)]
+struct HTTPManagerError {}
+
+impl Error for HTTPManagerError {}
+
+impl fmt::Display for HTTPManagerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Manager Error")
+    }
 }
 
 pub struct Manager {
@@ -26,20 +44,7 @@ impl Manager {
         let url = Url::parse(value.to_string().as_str()).ok()?;
         Some(Self { url })
     }
-}
 
-#[derive(Debug)]
-struct ManagerError {}
-
-impl fmt::Display for ManagerError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Manager Error")
-    }
-}
-
-impl Error for ManagerError {}
-
-impl Manager {
     pub async fn check_version(&self) -> Option<Version> {
         if let Ok(url) = &self.url.join("json/version") {
             crate::external::fetch::fetch(url.clone()).await.ok()
@@ -61,24 +66,25 @@ impl HTTPManager for Manager {
             None
         }
     }
-}
-type WSCliSelectTask =
-    Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + 'static + Send>>;
 
-pub async fn get_ws_cli<F>(manager: impl HTTPManager, selector: F) -> Option<WSStream>
-where
-    // F: Fn(Vec<WebSocketConnectionInfo>) -> Option<WebSocketConnectionInfo>,
-    F: FnOnce(Vec<WebSocketConnectionInfo>) -> WSCliSelectTask,
-{
-    let processes = manager.get_worker_list().await?;
-    if let Some(p) = selector(processes).await {
-        log_info!("{:?}", p.clone());
-        get_stream(p.clone().web_socket_debugger_url).await.ok()
-    } else {
-        None
+    /// get websocket client from info given by asynchronous closure.
+    async fn get_ws_cli<F>(manager: impl HTTPManager, selector: F) -> Option<WSStream>
+    where
+        F: FnOnce(Vec<WebSocketConnectionInfo>) -> Option,
+    {
+        let processes = manager.get_worker_list().await;
+        match processes {
+            None => return None,
+            Some(processes) => {
+                if let Some(p) = selector(processes).await {
+                    log_info!("{:?}", p.clone());
+                    WSStream::get_stream(p.clone().web_socket_debugger_url)
+                        .await
+                        .ok()
+                } else {
+                    None
+                }
+            }
+        }
     }
-    // match process {
-    //     None => Err((ManagerError {}).into()),
-    //     Some(p) => Ok(get_stream(p.web_socket_debugger_url.clone()).await?),
-    // }
 }
