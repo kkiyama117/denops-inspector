@@ -72,35 +72,25 @@ impl HTTPManager for Manager {
     }
 
     /// get websocket client from info given by asynchronous closure.
-    fn get_ws_cli<'life0, 'async_trait, F>(
-        &'life0 self,
-        selector: F,
-    ) -> Pin<Box<dyn Future<Output = Option<WSStream>> + Send + 'async_trait>>
+    async fn get_ws_cli<F>(&self, selector: F) -> Option<WSStream>
     where
         F: Fn(
-            Vec<WebSocketConnectionInfo>,
-        ) -> Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + Send>>,
-        F: 'async_trait + Sync,
-        'life0: 'async_trait,
-        Self: 'async_trait,
-        F: Send,
+                Vec<WebSocketConnectionInfo>,
+            ) -> Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + Send>>
+            + Sync
+            + Send,
     {
-        Box::pin(async move {
-            let processes = self.get_worker_list().await;
-            match processes {
-                None => return None,
-                Some(processes) => {
-                    if let Some(p) = selector(processes).await {
-                        log_info!("{:?}", p.clone());
-                        let a = WSStream::get_stream(p.clone().web_socket_debugger_url)
-                            .await
-                            .ok();
-                        a
-                    } else {
-                        None
-                    }
-                }
-            }
-        })
+        if let Some(processes) = self.get_worker_list().await {
+            return if let Some(p) = selector(processes).await {
+                log_info!("{:?}", p.clone());
+                let a = WSStream::get_stream(p.clone().web_socket_debugger_url)
+                    .await
+                    .ok();
+                a
+            } else {
+                None
+            };
+        }
+        None
     }
 }
