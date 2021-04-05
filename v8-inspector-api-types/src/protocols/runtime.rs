@@ -1,6 +1,6 @@
 pub mod methods {
     use crate::methods::Method;
-    use crate::types::{JsInt, JsUInt, ScriptId, UniqueDebuggerId};
+    use crate::types::{JsUInt, ScriptId, UniqueDebuggerId};
     use serde::{Deserialize, Serialize};
 
     #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]

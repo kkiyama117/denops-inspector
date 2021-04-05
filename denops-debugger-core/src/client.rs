@@ -1,9 +1,9 @@
 use crate::external::fetch::fetch;
 use crate::external::ws_cli::WSStream;
 use async_trait::async_trait;
-use futures::Future;
 use std::error::Error;
 use std::fmt;
+use std::future::Future;
 use std::pin::Pin;
 use url::Url;
 use v8_inspector_api_types::http_methods::{Version, WebSocketConnectionInfo};
@@ -15,9 +15,13 @@ use v8_inspector_api_types::http_methods::{Version, WebSocketConnectionInfo};
 #[async_trait]
 pub trait HTTPManager {
     async fn get_worker_list(&self) -> Option<Vec<WebSocketConnectionInfo>>;
-    async fn get_ws_cli<F>(manager: impl HTTPManager, selector: F) -> Option<WSStream>
+    async fn get_ws_cli<F>(&self, selector: F) -> Option<WSStream>
     where
-        F: Fn(Vec<WebSocketConnectionInfo>) -> Option<WebSocketConnectionInfo>;
+        F: Fn(
+                Vec<WebSocketConnectionInfo>,
+            ) -> Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + Send>>
+            + Sync
+            + Send;
 }
 
 #[derive(Debug)]
@@ -68,23 +72,35 @@ impl HTTPManager for Manager {
     }
 
     /// get websocket client from info given by asynchronous closure.
-    async fn get_ws_cli<F>(manager: impl HTTPManager, selector: F) -> Option<WSStream>
+    fn get_ws_cli<'life0, 'async_trait, F>(
+        &'life0 self,
+        selector: F,
+    ) -> Pin<Box<dyn Future<Output = Option<WSStream>> + Send + 'async_trait>>
     where
-        F: FnOnce(Vec<WebSocketConnectionInfo>) -> Option,
+        F: Fn(
+            Vec<WebSocketConnectionInfo>,
+        ) -> Pin<Box<dyn Future<Output = Option<WebSocketConnectionInfo>> + Send>>,
+        F: 'async_trait + Sync,
+        'life0: 'async_trait,
+        Self: 'async_trait,
+        F: Send,
     {
-        let processes = manager.get_worker_list().await;
-        match processes {
-            None => return None,
-            Some(processes) => {
-                if let Some(p) = selector(processes).await {
-                    log_info!("{:?}", p.clone());
-                    WSStream::get_stream(p.clone().web_socket_debugger_url)
-                        .await
-                        .ok()
-                } else {
-                    None
+        Box::pin(async move {
+            let processes = self.get_worker_list().await;
+            match processes {
+                None => return None,
+                Some(processes) => {
+                    if let Some(p) = selector(processes).await {
+                        log_info!("{:?}", p.clone());
+                        let a = WSStream::get_stream(p.clone().web_socket_debugger_url)
+                            .await
+                            .ok();
+                        a
+                    } else {
+                        None
+                    }
                 }
             }
-        }
+        })
     }
 }

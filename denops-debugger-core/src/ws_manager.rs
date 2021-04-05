@@ -43,7 +43,7 @@ fn create_ws_resolver(
     rx: Receiver<TestMsg>,
     shutdown_rx: Receiver<bool>,
 ) -> Result<(JoinHandle<()>, JoinHandle<()>), WebsocketManagerError> {
-    let (writer, reader) = stream.split();
+    let (writer, reader) = stream.inner().split();
 
     // create thread to manage sending message
     let writer = spawn(async move {

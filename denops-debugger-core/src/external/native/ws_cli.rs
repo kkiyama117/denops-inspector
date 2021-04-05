@@ -8,4 +8,7 @@ impl WSStream {
     pub async fn get_stream(url: Url) -> anyhow::Result<Self> {
         Ok(WSStream(connect_async(url).await?.0))
     }
+    pub fn inner(self) -> WebSocketStream<MaybeTlsStream<TcpStream>> {
+        self.0
+    }
 }
