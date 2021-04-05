@@ -7,7 +7,7 @@ use futures_util::stream::Stream;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use std::error::Error;
 use std::fmt;
-use v8_inspector_api_types::messages::Message;
+use v8_inspector_api_types::messages::Message as Msg;
 
 #[derive(Debug)]
 pub enum TestMsg {
@@ -70,15 +70,15 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
         if let Ok(message) = reader.try_next().await {
             if let Some(message) = message {
                 let message = message.to_string();
-                if let Ok(res) = serde_json::from_str::<Message>(message.as_str()) {
+                if let Ok(res) = serde_json::from_str::<Msg>(message.as_str()) {
                     match res {
-                        Message::Event(eve) => {
+                        Msg::Event(eve) => {
                             log_debug!("recv[]: {:?}", eve);
                         }
-                        Message::Response(res) => {
+                        Msg::Response(res) => {
                             log_debug!("recv[]: {:?}", res);
                         }
-                        Message::ConnectionShutdown => {
+                        Msg::ConnectionShutdown => {
                             break 'outer;
                         }
                     }
@@ -107,7 +107,7 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
 }
 
 async fn writer_process(
-    mut writer: impl Sink<tungstenite::Message> + Unpin,
+    mut writer: impl Sink<crate::external::ws_cli::Message> + Unpin,
     mut rx: Receiver<TestMsg>,
 ) -> Result<(), WebsocketManagerError> {
     while let Some(data) = rx.next().await {

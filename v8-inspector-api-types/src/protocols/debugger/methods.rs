@@ -86,6 +86,17 @@ impl Method for Pause {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct Resume {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResumeReturnObject {}
+impl Method for Resume {
+    const NAME: &'static str = "Debugger.resume";
+    type ReturnObject = ResumeReturnObject;
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct SetSkipAllPauses {
     pub skip: bool,
 }
@@ -95,15 +106,4 @@ pub struct SetSkipAllPausesReturnObject {}
 impl Method for SetSkipAllPauses {
     const NAME: &'static str = "Debugger.setSkipAllPauses";
     type ReturnObject = SetSkipAllPausesReturnObject;
-}
-
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Resume {}
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ResumeReturnObject {}
-impl Method for Resume {
-    const NAME: &'static str = "Debugger.resume";
-    type ReturnObject = ResumeReturnObject;
 }

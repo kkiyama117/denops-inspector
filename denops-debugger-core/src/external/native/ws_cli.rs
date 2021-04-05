@@ -12,3 +12,5 @@ impl WSStream {
         self.0
     }
 }
+
+pub type Message = tungstenite::Message;
