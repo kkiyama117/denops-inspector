@@ -1,5 +1,5 @@
+use denops_debugger_core::client::HTTPManager;
 use denops_debugger_core::{
-    client::get_ws_cli,
     client::Manager,
     ws_manager::{TestMsg, WebSocketManager},
 };
@@ -61,8 +61,7 @@ async fn initialize() -> InitializedValue {
     let (tx, rx) = channel::<TestMsg>(10);
 
     let man = Manager::from_string("http://localhost:9229").unwrap();
-    // Todo: do not clone
-    let stream = get_ws_cli(man, selector).await.unwrap();
+    let stream = man.get_ws_cli(selector).await.unwrap();
     let ws_manager = WebSocketManager::new(stream, rx, srx);
     InitializedValue {
         stx,
