@@ -7,7 +7,7 @@ use futures_util::stream::Stream;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use std::error::Error;
 use std::fmt;
-use v8_inspector_api_types::messages::Message as Msg;
+use v8_inspector_api_types::messages::{Event, Message as Msg};
 
 #[derive(Debug)]
 pub enum TestMsg {
@@ -72,9 +72,12 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
                 let message = message.to_string();
                 if let Ok(res) = serde_json::from_str::<Msg>(message.as_str()) {
                     match res {
-                        Msg::Event(eve) => {
-                            log_debug!("recv[]: {:?}", eve);
-                        }
+                        Msg::Event(eve) => match eve {
+                            Event::ScriptParsed(_) => {}
+                            _ => {
+                                log_debug!("recv[]: {:?}", eve);
+                            }
+                        },
                         Msg::Response(res) => {
                             log_debug!("recv[]: {:?}", res);
                         }

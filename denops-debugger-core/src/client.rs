@@ -81,6 +81,7 @@ impl HTTPManager for Manager {
             + Send,
     {
         if let Some(processes) = self.get_worker_list().await {
+            println!("{:?}", processes);
             return if let Some(p) = selector(processes).await {
                 log_info!("{:?}", p.clone());
                 let a = WSStream::get_stream(p.clone().web_socket_debugger_url)

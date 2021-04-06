@@ -1,6 +1,9 @@
 use crate::methods::Method;
+use crate::prelude::types::BreakLocation;
 use crate::protocols::debugger::types::{CallFrameId, Location};
-use crate::protocols::runtime::events::TimeDelta;
+use crate::protocols::runtime::events::{ExceptionDetails, TimeDelta};
+use crate::protocols::runtime::methods::RemoteObject;
+use crate::types::{JsUInt, UniqueDebuggerId};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
@@ -20,10 +23,14 @@ impl Method for ContinueToLocation {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Enable {}
+pub struct Enable {
+    max_script_cache_size: Option<JsUInt>,
+}
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EnableReturnObject {}
+pub struct EnableReturnObject {
+    debugger_id: Option<UniqueDebuggerId>,
+}
 impl Method for Enable {
     const NAME: &'static str = "Debugger.enable";
     type ReturnObject = EnableReturnObject;
@@ -56,7 +63,10 @@ pub struct EvaluateOnCallFrame {
 }
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EvaluateOnCallFrameReturnObject {}
+pub struct EvaluateOnCallFrameReturnObject {
+    result: RemoteObject,
+    exception_details: Option<ExceptionDetails>,
+}
 impl Method for EvaluateOnCallFrame {
     const NAME: &'static str = "Debugger.evaluateOnCallFrame ";
     type ReturnObject = EvaluateOnCallFrameReturnObject;
@@ -64,10 +74,16 @@ impl Method for EvaluateOnCallFrame {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct GetPossibleBreakpoints {}
+pub struct GetPossibleBreakpoints {
+    start: Location,
+    end: Option<Location>,
+    restrict_to_function: Option<bool>,
+}
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GetPossibleBreakpointsReturnObject {}
+pub struct GetPossibleBreakpointsReturnObject {
+    locations: Vec<BreakLocation>,
+}
 impl Method for GetPossibleBreakpoints {
     const NAME: &'static str = "Debugger.getPossibleBreakpoints ";
     type ReturnObject = GetPossibleBreakpointsReturnObject;
@@ -86,7 +102,9 @@ impl Method for Pause {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Resume {}
+pub struct Resume {
+    pub terminate_on_resume: Option<bool>,
+}
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResumeReturnObject {}
