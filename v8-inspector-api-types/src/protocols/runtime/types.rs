@@ -21,12 +21,12 @@ pub struct CallFrame {
 #[serde(rename_all = "camelCase")]
 pub struct StackTrace {
     pub description: Option<String>,
-    pub call_frame: Vec<CallFrame>,
-    #[serde(rename = "type")]
-    pub object_type: String,
-    pub value: Option<String>,
-    pub value_preview: Option<Box<PropertyPreview>>,
-    pub subtype: Option<String>,
+    pub call_frames: Vec<CallFrame>,
+    pub parent: Option<Box<StackTrace>>,
+    /// Asynchronous JavaScript stack trace that preceded this stack, if available.
+    /// Experimental feature of DevTools
+    /// See https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-StackTraceId
+    parent_id: Option<StackTraceId>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
@@ -36,7 +36,8 @@ pub struct PropertyPreview {
     #[serde(rename = "type")]
     pub object_type: String,
     pub value: Option<String>,
-    pub value_preview: Option<Box<PropertyPreview>>,
+    /// Nested value preview.
+    pub value_preview: Option<Box<ObjectPreview>>,
     pub subtype: Option<String>,
 }
 
@@ -48,6 +49,7 @@ pub struct ObjectPreview {
     pub subtype: Option<String>,
     pub description: Option<String>,
     pub overflow: bool,
+    /// List of the properties.
     pub properties: Vec<PropertyPreview>,
 }
 
