@@ -6,7 +6,7 @@ use crate::protocols::runtime::types::{RemoteObject, UniqueDebuggerId};
 use crate::types::JsUInt;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ContinueToLocation {
     location: Location,
@@ -21,7 +21,7 @@ impl Method for ContinueToLocation {
     type ReturnObject = ContinueToLocationReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Enable {
     pub max_script_cache_size: Option<JsUInt>,
@@ -36,7 +36,7 @@ impl Method for Enable {
     type ReturnObject = EnableReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Disable {}
 #[derive(Debug, Deserialize)]
@@ -47,7 +47,7 @@ impl Method for Disable {
     type ReturnObject = DisableReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct EvaluateOnCallFrame {
     call_frame_id: CallFrameId,
@@ -72,7 +72,7 @@ impl Method for EvaluateOnCallFrame {
     type ReturnObject = EvaluateOnCallFrameReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GetPossibleBreakpoints {
     start: Location,
@@ -89,7 +89,7 @@ impl Method for GetPossibleBreakpoints {
     type ReturnObject = GetPossibleBreakpointsReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Pause {}
 #[derive(Debug, Deserialize)]
@@ -100,7 +100,7 @@ impl Method for Pause {
     type ReturnObject = PauseReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Resume {
     pub terminate_on_resume: Option<bool>,
@@ -113,7 +113,7 @@ impl Method for Resume {
     type ReturnObject = ResumeReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SetSkipAllPauses {
     pub skip: bool,
@@ -126,7 +126,7 @@ impl Method for SetSkipAllPauses {
     type ReturnObject = SetSkipAllPausesReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct StepInto {
     pub break_on_async_call: Option<bool>,
@@ -139,7 +139,7 @@ impl Method for StepInto {
     const NAME: &'static str = "Debugger.stepInto";
     type ReturnObject = StepIntoReturnObject;
 }
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct StepOut {}
 #[derive(Debug, Deserialize)]
@@ -150,7 +150,7 @@ impl Method for StepOut {
     type ReturnObject = StepOutReturnObject;
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct StepOver {
     pub skip_list: Vec<LocationLange>,

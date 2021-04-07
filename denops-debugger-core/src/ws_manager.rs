@@ -70,22 +70,23 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
         if let Ok(message) = reader.try_next().await {
             if let Some(message) = message {
                 let message = message.to_string();
-                match serde_json::from_str::<Msg>(message.as_str()) {
-                    Ok(res) => match res {
-                        Msg::Event(eve) => {
-                            log_debug!("recv[]: {:?}", eve);
+                if !message.is_empty() {
+                    match serde_json::from_str::<Msg>(message.as_str()) {
+                        Ok(res) => match res {
+                            Msg::Event(eve) => {
+                                log_debug!("recv[]: {:?}", eve);
+                            }
+                            Msg::Response(res) => {
+                                log_debug!("recv[]: {:?}", res);
+                            }
+                            Msg::ConnectionShutdown => {
+                                break 'outer;
+                            }
+                        },
+                        Err(e) => {
+                            log_error!("Error caused when parsing data in responses ({})", message);
+                            log_error!("{:?}", e);
                         }
-                        Msg::Response(res) => {
-                            log_debug!("recv[]: {:?}", res);
-                        }
-                        Msg::ConnectionShutdown => {
-                            break 'outer;
-                        }
-                    },
-                    Err(e) => {
-                        log_error!("Error caused when parsing data in responses");
-                        log_error!("{:?}", message);
-                        log_error!("{:?}", e);
                     }
                 }
             } else {

@@ -1,5 +1,5 @@
 use crate::types::JsUInt;
-use serde::Serialize;
+use serde::{Deserializer, Serialize};
 use std::fmt::Debug;
 
 /// Serialized struct for method call

@@ -7,9 +7,9 @@ use futures::channel::mpsc::{channel, Sender};
 use futures::future::BoxFuture;
 use futures::join;
 use futures_util::{FutureExt, SinkExt};
+use tokio::io::{stdin, AsyncBufReadExt, BufReader};
 use tokio::time::{sleep, Duration};
 use v8_inspector_api_types::http_methods::WebSocketConnectionInfo;
-use v8_inspector_api_types::protocols::runtime;
 use v8_inspector_api_types::{methods::Method, protocols::debugger::methods};
 
 #[tokio::main]
@@ -21,26 +21,43 @@ async fn main() {
     }: InitializedValue = initialize().await;
 
     let main_thread = async move {
-        sleep(Duration::from_millis(5000)).await;
+        println!("Start!");
+        let mut input_lines = BufReader::new(stdin());
+        let mut count = 0;
+        loop {
+            let mut buf = String::new();
+            match input_lines.read_line(&mut buf).await {
+                Ok(remain) => {
+                    if remain == 0 {
+                        println!("EOF!");
+                    }
+                    if buf == "terminate\n" {
+                        break;
+                    } else {
+                        let command = methods::Enable {
+                            max_script_cache_size: None,
+                        };
+                        println!("{}", serde_json::to_string(&command).unwrap());
+                        // let cmd = serde_json::from_str::<MethodInput>(buf.as_str()).unwrap();
+                        let data = command.into_method_call(count);
+                        let data = serde_json::to_string(data.as_ref()).unwrap();
+                        tx.send(TestMsg::Msg(data)).await.unwrap();
+                        // for next loop
+                        count += 1;
+                        sleep(Duration::from_millis(100)).await;
+                        println!("next");
+                    }
+                }
+                Err(e) => {
+                    println!("{:?}", e);
+                }
+            }
+        }
 
-        let command = methods::Enable {
-            max_script_cache_size: None,
-        };
-        let data = command.into_method_call(1);
-        let data = serde_json::to_string(data.as_ref()).unwrap();
-
-        sleep(Duration::from_millis(1000)).await;
-        tx.send(TestMsg::Msg(data)).await.unwrap();
-
-        let command = runtime::methods::RunIfWaitingForDebugger {};
-        let data = command.into_method_call(2);
-        let data = serde_json::to_string(data.as_ref()).unwrap();
-        tx.send(TestMsg::Msg(data)).await.unwrap();
-        sleep(Duration::from_millis(50000)).await;
-
+        // send messages to terminate other threads
         stx.send(true).await.unwrap();
         tx.send(TestMsg::Terminate).await.unwrap();
-        sleep(Duration::from_millis(1000)).await;
+        sleep(Duration::from_millis(100)).await;
     };
     let _ = join!(b.reader, b.writer, main_thread);
 }
@@ -58,6 +75,7 @@ async fn initialize() -> InitializedValue {
         ws_manager,
     }
 }
+
 fn selector(
     x: Vec<WebSocketConnectionInfo>,
 ) -> BoxFuture<'static, Option<WebSocketConnectionInfo>> {
