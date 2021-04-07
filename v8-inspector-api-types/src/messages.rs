@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::errors::RemoteError;
-use crate::protocols::debugger;
+use crate::protocols::{debugger, runtime};
 use crate::types::JsUInt;
 
 type CallId = JsUInt;
@@ -57,8 +57,10 @@ pub enum Event {
     // ResponseReceived(network::events.rs::ResponseReceivedEvent),
     // #[serde(rename = "Log.entryAdded")]
     // LogEntryAdded(logs::events.rs::EntryAddedEvent),
-    // #[serde(rename = "Runtime.exceptionThrown")]
-    // RuntimeExceptionThrown(runtime::events.rs::ExceptionThrownEvent),
+    #[serde(rename = "Runtime.exceptionThrown")]
+    RuntimeExceptionThrown(runtime::events::ExceptionThrownEvent),
+    #[serde(rename = "Runtime.inspectRequested")]
+    InspectRequested(runtime::events::InspectRequested),
 }
 
 #[derive(Deserialize, Debug, Clone)]

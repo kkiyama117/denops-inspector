@@ -1,9 +1,9 @@
 use crate::methods::Method;
 use crate::prelude::types::BreakLocation;
-use crate::protocols::debugger::types::{CallFrameId, Location};
+use crate::protocols::debugger::types::{CallFrameId, Location, LocationLange};
 use crate::protocols::runtime::events::{ExceptionDetails, TimeDelta};
-use crate::protocols::runtime::methods::RemoteObject;
-use crate::types::{JsUInt, UniqueDebuggerId};
+use crate::protocols::runtime::types::{RemoteObject, UniqueDebuggerId};
+use crate::types::JsUInt;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
@@ -24,7 +24,7 @@ impl Method for ContinueToLocation {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Enable {
-    max_script_cache_size: Option<JsUInt>,
+    pub max_script_cache_size: Option<JsUInt>,
 }
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -64,7 +64,7 @@ pub struct EvaluateOnCallFrame {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvaluateOnCallFrameReturnObject {
-    result: RemoteObject,
+    pub result: RemoteObject,
     exception_details: Option<ExceptionDetails>,
 }
 impl Method for EvaluateOnCallFrame {
@@ -124,4 +124,41 @@ pub struct SetSkipAllPausesReturnObject {}
 impl Method for SetSkipAllPauses {
     const NAME: &'static str = "Debugger.setSkipAllPauses";
     type ReturnObject = SetSkipAllPausesReturnObject;
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct StepInto {
+    pub break_on_async_call: Option<bool>,
+    pub skip_list: Vec<LocationLange>,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StepIntoReturnObject {}
+impl Method for StepInto {
+    const NAME: &'static str = "Debugger.stepInto";
+    type ReturnObject = StepIntoReturnObject;
+}
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct StepOut {}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StepOutReturnObject {}
+impl Method for StepOut {
+    const NAME: &'static str = "Debugger.stepOut";
+    type ReturnObject = StepOutReturnObject;
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct StepOver {
+    pub skip_list: Vec<LocationLange>,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StepOverReturnObject {}
+impl Method for StepOver {
+    const NAME: &'static str = "Debugger.stepOver";
+    type ReturnObject = StepOverReturnObject;
 }

@@ -1,8 +1,8 @@
 use serde::Deserialize;
 
 use crate::protocols::debugger::types::{BreakPointId, CallFrame, DebugSymbols, Location};
-use crate::protocols::runtime::methods::{StackTrace, StackTraceId};
-use crate::types::{JsUInt, ScriptId};
+use crate::protocols::runtime::types::{ScriptId, StackTrace, StackTraceId};
+use crate::types::JsUInt;
 
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct BreakpointResolved {

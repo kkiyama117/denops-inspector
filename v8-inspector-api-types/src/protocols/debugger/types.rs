@@ -1,5 +1,5 @@
-use crate::protocols::runtime::methods::RemoteObject;
-use crate::types::{JsInt, ScriptId};
+use crate::protocols::runtime::types::{RemoteObject, ScriptId};
+use crate::types::{JsInt, JsUInt};
 use serde::{Deserialize, Serialize};
 
 /// See https://chromedevtools.github.io/devtools-protocol/v8/Debugger/#type-BreakLocation
@@ -65,4 +65,18 @@ pub type ScriptLanguage = String;
 pub struct SearchMatch {
     line_number: JsInt,
     line_content: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct LocationLange {
+    script_id: ScriptId,
+    start: ScriptPosition,
+    end: ScriptPosition,
+}
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ScriptPosition {
+    line_number: JsUInt,
+    column_number: JsUInt,
 }

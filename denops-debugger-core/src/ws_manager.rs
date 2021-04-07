@@ -70,24 +70,23 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
         if let Ok(message) = reader.try_next().await {
             if let Some(message) = message {
                 let message = message.to_string();
-                if let Ok(res) = serde_json::from_str::<Msg>(message.as_str()) {
-                    match res {
-                        Msg::Event(eve) => match eve {
-                            Event::ScriptParsed(_) => {}
-                            _ => {
-                                log_debug!("recv[]: {:?}", eve);
-                            }
-                        },
+                match serde_json::from_str::<Msg>(message.as_str()) {
+                    Ok(res) => match res {
+                        Msg::Event(eve) => {
+                            log_debug!("recv[]: {:?}", eve);
+                        }
                         Msg::Response(res) => {
                             log_debug!("recv[]: {:?}", res);
                         }
                         Msg::ConnectionShutdown => {
                             break 'outer;
                         }
+                    },
+                    Err(e) => {
+                        log_error!("Error caused when parsing data in responses");
+                        log_error!("{:?}", message);
+                        log_error!("{:?}", e);
                     }
-                } else {
-                    log_error!("Error caused when parsing data in responses");
-                    log_error!("{:?}", message);
                 }
             } else {
                 return Err(WebsocketManagerError {
