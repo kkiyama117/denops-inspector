@@ -1,7 +1,3 @@
-#[cfg(not(target_arch = "wasm32"))]
-#[path = "external/native/mod.rs"]
-#[macro_use]
-pub mod external;
 // pub(crate) mod external;
 
 #[cfg(target_arch = "wasm32")]
@@ -9,6 +5,4 @@ pub mod external;
 #[macro_use]
 pub(crate) mod external;
 
-pub mod client;
 pub mod errors;
-pub mod ws_manager;

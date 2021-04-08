@@ -1,6 +1,6 @@
+use crate::client::HTTPManager;
+use crate::external::ws_cli::WSStream;
 use async_trait::async_trait;
-use denops_debugger_core::client::HTTPManager;
-use denops_debugger_core::external::ws_cli::WSStream;
 use futures::Future;
 use serde::de::DeserializeOwned;
 use std::pin::Pin;
