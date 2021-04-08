@@ -7,10 +7,9 @@ use futures_util::stream::Stream;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use std::error::Error;
 use std::fmt;
-use v8_inspector_api_types::messages::{Event, Message as Msg};
+use v8_inspector_api_types::messages::Message as Msg;
 
-#[derive(Debug)]
-pub enum TestMsg {
+pub enum Command {
     Msg(String),
     Terminate,
 }
@@ -32,7 +31,7 @@ impl fmt::Display for WebsocketManagerError {
 impl Error for WebsocketManagerError {}
 
 impl WebSocketManager {
-    pub fn new(stream: WSStream, rx: Receiver<TestMsg>, shutdown_rx: Receiver<bool>) -> Self {
+    pub fn new(stream: WSStream, rx: Receiver<Command>, shutdown_rx: Receiver<bool>) -> Self {
         let (reader, writer) = create_ws_resolver(stream, rx, shutdown_rx).unwrap();
         WebSocketManager { reader, writer }
     }
@@ -40,7 +39,7 @@ impl WebSocketManager {
 
 fn create_ws_resolver(
     stream: WSStream,
-    rx: Receiver<TestMsg>,
+    rx: Receiver<Command>,
     shutdown_rx: Receiver<bool>,
 ) -> Result<(JoinHandle<()>, JoinHandle<()>), WebsocketManagerError> {
     let (writer, reader) = stream.inner().split();
@@ -111,12 +110,12 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
 
 async fn writer_process(
     mut writer: impl Sink<crate::external::ws_cli::Message> + Unpin,
-    mut rx: Receiver<TestMsg>,
+    mut rx: Receiver<Command>,
 ) -> Result<(), WebsocketManagerError> {
     while let Some(data) = rx.next().await {
         // write message
         match data {
-            TestMsg::Msg(data) => match writer.send(data.into()).await {
+            Command::Msg(data) => match writer.send(data.into()).await {
                 Ok(_) => {}
                 Err(_) => {
                     return Err(WebsocketManagerError {
@@ -124,7 +123,7 @@ async fn writer_process(
                     });
                 }
             },
-            TestMsg::Terminate => {
+            Command::Terminate => {
                 rx.close();
                 match writer.close().await {
                     Ok(_) => {}

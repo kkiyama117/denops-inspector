@@ -2,7 +2,7 @@ mod manager;
 
 use crate::manager::Manager;
 use denops_debugger_core::client::HTTPManager;
-use denops_debugger_core::ws_manager::{TestMsg, WebSocketManager};
+use denops_debugger_core::ws_manager::{Command, WebSocketManager};
 use futures::channel::mpsc::{channel, Sender};
 use futures::future::BoxFuture;
 use futures::join;
@@ -41,7 +41,7 @@ async fn main() {
                         // let cmd = serde_json::from_str::<MethodInput>(buf.as_str()).unwrap();
                         let data = command.into_method_call(count);
                         let data = serde_json::to_string(data.as_ref()).unwrap();
-                        tx.send(TestMsg::Msg(data)).await.unwrap();
+                        tx.send(Command::Msg(data)).await.unwrap();
                         // for next loop
                         count += 1;
                         sleep(Duration::from_millis(100)).await;
@@ -56,7 +56,7 @@ async fn main() {
 
         // send messages to terminate other threads
         stx.send(true).await.unwrap();
-        tx.send(TestMsg::Terminate).await.unwrap();
+        tx.send(Command::Terminate).await.unwrap();
         sleep(Duration::from_millis(100)).await;
     };
     let _ = join!(b.reader, b.writer, main_thread);
@@ -64,7 +64,7 @@ async fn main() {
 
 async fn initialize() -> InitializedValue {
     let (stx, srx) = channel::<bool>(1);
-    let (tx, rx) = channel::<TestMsg>(10);
+    let (tx, rx) = channel::<Command>(10);
 
     let man = Manager::from_string("http://localhost:9229").unwrap();
     let stream = man.get_ws_cli(selector).await.unwrap();
@@ -84,6 +84,6 @@ fn selector(
 
 struct InitializedValue {
     stx: Sender<bool>,
-    tx: Sender<TestMsg>,
+    tx: Sender<Command>,
     ws_manager: WebSocketManager,
 }

@@ -5,7 +5,7 @@ use futures::Future;
 use serde::de::DeserializeOwned;
 use std::pin::Pin;
 use url::Url;
-use v8_inspector_api_types::http_methods::{Version, WebSocketConnectionInfo};
+use v8_inspector_api_types::http_methods::WebSocketConnectionInfo;
 
 pub struct Manager {
     url: Url,
