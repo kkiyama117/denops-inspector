@@ -1,8 +1,8 @@
+mod manager;
+
+use crate::manager::Manager;
 use denops_debugger_core::client::HTTPManager;
-use denops_debugger_core::{
-    client::Manager,
-    ws_manager::{TestMsg, WebSocketManager},
-};
+use denops_debugger_core::ws_manager::{TestMsg, WebSocketManager};
 use futures::channel::mpsc::{channel, Sender};
 use futures::future::BoxFuture;
 use futures::join;

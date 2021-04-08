@@ -1,7 +1,5 @@
 use futures::Future;
 
-pub mod fetch;
-pub(crate) mod file;
 #[macro_use]
 pub mod logging;
 pub mod ws_cli;
