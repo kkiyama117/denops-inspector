@@ -17,40 +17,20 @@ pub struct CallFrame {
     column_number: JsUInt,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+/// Detailed information about exception (or error) that was thrown during script compilation or execution
+/// See https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-ExceptionDetails
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct StackTrace {
-    pub description: Option<String>,
-    pub call_frames: Vec<CallFrame>,
-    pub parent: Option<Box<StackTrace>>,
-    /// Asynchronous JavaScript stack trace that preceded this stack, if available.
-    /// Experimental feature of DevTools
-    /// See https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-StackTraceId
-    parent_id: Option<StackTraceId>,
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct PropertyPreview {
-    pub name: String,
-    #[serde(rename = "type")]
-    pub object_type: String,
-    pub value: Option<String>,
-    /// Nested value preview.
-    pub value_preview: Option<Box<ObjectPreview>>,
-    pub subtype: Option<String>,
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct ObjectPreview {
-    #[serde(rename = "type")]
-    pub object_type: String,
-    pub subtype: Option<String>,
-    pub description: Option<String>,
-    pub overflow: bool,
-    /// List of the properties.
-    pub properties: Vec<PropertyPreview>,
+pub struct ExceptionDetails {
+    pub exception_id: JsUInt,
+    pub text: String,
+    pub line_number: JsUInt,
+    pub column_number: JsUInt,
+    pub script_id: Option<ScriptId>,
+    pub url: Option<String>,
+    pub stack_trace: Option<StackTrace>,
+    pub exception: Option<RemoteObject>,
+    pub execution_context_id: Option<JsUInt>,
 }
 
 /// Object type
@@ -103,6 +83,44 @@ pub struct RemoteObject {
     pub value: Option<serde_json::Value>,
     pub unserializable_value: Option<String>,
     pub preview: Option<ObjectPreview>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct StackTrace {
+    pub description: Option<String>,
+    pub call_frames: Vec<CallFrame>,
+    pub parent: Option<Box<StackTrace>>,
+    /// Asynchronous JavaScript stack trace that preceded this stack, if available.
+    /// Experimental feature of DevTools
+    /// See https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-StackTraceId
+    parent_id: Option<StackTraceId>,
+}
+
+pub type TimeDelta = JsUInt;
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ObjectPreview {
+    #[serde(rename = "type")]
+    pub object_type: String,
+    pub subtype: Option<String>,
+    pub description: Option<String>,
+    pub overflow: bool,
+    /// List of the properties.
+    pub properties: Vec<PropertyPreview>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PropertyPreview {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub object_type: String,
+    pub value: Option<String>,
+    /// Nested value preview.
+    pub value_preview: Option<Box<ObjectPreview>>,
+    pub subtype: Option<String>,
 }
 
 /// Experimental

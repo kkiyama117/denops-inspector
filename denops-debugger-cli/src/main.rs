@@ -63,8 +63,28 @@ async fn main_thread(tx: Sender<Command>) -> JoinHandle<()> {
                     if !buf.is_empty() {
                         if buf == "terminate\n" {
                             break;
-                        } else {
+                        } else if buf == "pause\n" {
                             let command = debugger::methods::Pause {};
+                            if let Err(e) = send_command(&tx, command, count).await {
+                                log_error!("{:?}", e);
+                            }
+                            // for next loop
+                            count += 1;
+                            sleep(Duration::from_millis(100)).await;
+                        } else if buf == "resume\n" {
+                            let command = debugger::methods::Resume {
+                                terminate_on_resume: false,
+                            };
+                            if let Err(e) = send_command(&tx, command, count).await {
+                                log_error!("{:?}", e);
+                            }
+                            // for next loop
+                            count += 1;
+                            sleep(Duration::from_millis(100)).await;
+                        } else {
+                            let command = debugger::methods::RestartFrame {
+                                call_frame_id: buf.trim().to_string(),
+                            };
                             if let Err(e) = send_command(&tx, command, count).await {
                                 log_error!("{:?}", e);
                             }

@@ -1,8 +1,7 @@
 use crate::methods::Method;
 use crate::prelude::types::BreakLocation;
-use crate::protocols::debugger::types::{CallFrameId, Location, LocationLange};
-use crate::protocols::runtime::events::{ExceptionDetails, TimeDelta};
-use crate::protocols::runtime::types::{RemoteObject, UniqueDebuggerId};
+use crate::protocols::debugger::types::{CallFrame, CallFrameId, Location, LocationLange};
+use crate::protocols::runtime::types as runtime_types;
 use crate::types::JsUInt;
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +28,7 @@ pub struct Enable {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EnableReturnObject {
-    debugger_id: Option<UniqueDebuggerId>,
+    debugger_id: Option<runtime_types::UniqueDebuggerId>,
 }
 impl Method for Enable {
     const NAME: &'static str = "Debugger.enable";
@@ -59,13 +58,13 @@ pub struct EvaluateOnCallFrame {
     return_by_value: Option<bool>,
     generate_preview: Option<bool>,
     throw_on_side_effect: Option<bool>,
-    timeout: Option<TimeDelta>,
+    timeout: Option<runtime_types::TimeDelta>,
 }
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EvaluateOnCallFrameReturnObject {
-    pub result: RemoteObject,
-    exception_details: Option<ExceptionDetails>,
+    pub result: runtime_types::RemoteObject,
+    exception_details: Option<runtime_types::ExceptionDetails>,
 }
 impl Method for EvaluateOnCallFrame {
     const NAME: &'static str = "Debugger.evaluateOnCallFrame ";
@@ -102,8 +101,25 @@ impl Method for Pause {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct RestartFrame {
+    pub call_frame_id: CallFrameId,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RestartFrameReturnObject {
+    call_frames: Vec<CallFrame>,
+    async_stck_trace: runtime_types::StackTrace,
+}
+impl Method for RestartFrame {
+    const NAME: &'static str = "Debugger.restartFrame";
+    type ReturnObject = RestartFrameReturnObject;
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Resume {
-    pub terminate_on_resume: Option<bool>,
+    // pub terminate_on_resume: Option<bool>,
+    pub terminate_on_resume: bool,
 }
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

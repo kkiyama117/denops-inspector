@@ -66,37 +66,43 @@ fn create_ws_resolver(
     (reader, writer)
 }
 
-async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
+async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E: Error>(
     mut reader: SplitStream<S>,
     shutdown_rx: Receiver<Command>,
 ) -> Result<(), WebsocketManagerError> {
     // pending flush buffer and read message if possible.
     'outer: loop {
-        if let Ok(message) = reader.try_next().await {
-            if let Some(message) = message {
-                let message = message.to_string();
-                if !message.is_empty() {
-                    match serde_json::from_str::<Msg>(message.as_str()) {
-                        Ok(res) => match res {
-                            Msg::Event(eve) => {
-                                log_debug!("recv[]: {:?}", eve);
+        match reader.try_next().await {
+            Ok(message) => {
+                if let Some(message) = message {
+                    let message = message.to_string();
+                    if !message.is_empty() {
+                        match serde_json::from_str::<Msg>(message.as_str()) {
+                            Ok(res) => match res {
+                                Msg::Event(eve) => {
+                                    log_debug!("recv[]: {:?}", eve);
+                                }
+                                Msg::Response(res) => {
+                                    log_debug!("recv[]: {:?}", res);
+                                }
+                                Msg::ConnectionShutdown => {
+                                    break 'outer;
+                                }
+                            },
+                            Err(e) => {
+                                log_error!(
+                                    "Error caused when parsing data in responses ({})",
+                                    message
+                                );
+                                log_error!("{:?}", e);
                             }
-                            Msg::Response(res) => {
-                                log_debug!("recv[]: {:?}", res);
-                            }
-                            Msg::ConnectionShutdown => {
-                                break 'outer;
-                            }
-                        },
-                        Err(e) => {
-                            log_error!("Error caused when parsing data in responses ({})", message);
-                            log_error!("{:?}", e);
                         }
                     }
                 }
-            } else {
+            }
+            Err(e) => {
                 return Err(WebsocketManagerError {
-                    msg: "Error caused when reading stream".to_string(),
+                    msg: format!("Error caused when reading stream({})", e),
                 });
             }
         }

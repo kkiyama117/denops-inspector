@@ -1,5 +1,4 @@
-use crate::protocols::runtime::types::{RemoteObject, ScriptId, StackTrace};
-use crate::types::{JsInt, JsUInt};
+use crate::protocols::runtime::types::{ExceptionDetails, RemoteObject};
 use serde::{Deserialize, Serialize};
 
 /// Issued when exception was thrown and unhandled
@@ -9,22 +8,6 @@ use serde::{Deserialize, Serialize};
 pub struct ExceptionThrown {
     pub timestamp: f64,
     pub exception_details: ExceptionDetails,
-}
-
-/// Detailed information about exception (or error) that was thrown during script compilation or execution
-/// See https://chromedevtools.github.io/devtools-protocol/tot/Runtime#type-ExceptionDetails
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct ExceptionDetails {
-    pub exception_id: JsInt,
-    pub text: String,
-    pub line_number: JsUInt,
-    pub column_number: JsUInt,
-    pub script_id: Option<ScriptId>,
-    pub url: Option<String>,
-    pub stack_trace: Option<StackTrace>,
-    pub exception: Option<RemoteObject>,
-    pub execution_context_id: Option<JsUInt>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -37,12 +20,10 @@ pub struct ExceptionThrownEvent {
 /// See https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#event-inspectRequested
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct InspectRequested {
+pub struct InspectRequestedEvent {
     pub object: RemoteObject,
     pub hints: serde_json::Value,
 }
-
-pub type TimeDelta = JsUInt;
 
 #[test]
 fn can_parse_exception_thrown_event() {

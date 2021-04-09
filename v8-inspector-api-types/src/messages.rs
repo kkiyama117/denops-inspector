@@ -60,7 +60,7 @@ pub enum Event {
     #[serde(rename = "Runtime.exceptionThrown")]
     RuntimeExceptionThrown(runtime::events::ExceptionThrownEvent),
     #[serde(rename = "Runtime.inspectRequested")]
-    InspectRequested(runtime::events::InspectRequested),
+    InspectRequested(runtime::events::InspectRequestedEvent),
 }
 
 #[derive(Deserialize, Debug, Clone)]
