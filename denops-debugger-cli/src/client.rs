@@ -1,4 +1,4 @@
-use crate::external::ws_cli::WSStream;
+use crate::types::WsStream;
 use async_trait::async_trait;
 use std::error::Error;
 use std::fmt;
@@ -11,9 +11,9 @@ use v8_inspector_api_types::http_methods::WebSocketConnectionInfo;
 
 /// You can implement HTTP manager for your own because of this trait is used instead of concrete types.
 #[async_trait]
-pub trait HTTPManager {
+pub trait HttpManager {
     async fn get_worker_list(&self) -> Option<Vec<WebSocketConnectionInfo>>;
-    async fn get_ws_cli<F>(&self, selector: F) -> Option<WSStream>
+    async fn get_ws_cli<F>(&self, selector: F) -> Option<WsStream>
     where
         F: Fn(
                 Vec<WebSocketConnectionInfo>,
@@ -23,11 +23,11 @@ pub trait HTTPManager {
 }
 
 #[derive(Debug)]
-struct HTTPManagerError {}
+struct HttpManagerError {}
 
-impl Error for HTTPManagerError {}
+impl Error for HttpManagerError {}
 
-impl fmt::Display for HTTPManagerError {
+impl fmt::Display for HttpManagerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Manager Error")
     }

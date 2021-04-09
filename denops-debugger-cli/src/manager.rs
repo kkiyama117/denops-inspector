@@ -1,9 +1,11 @@
-use crate::client::HTTPManager;
-use crate::external::ws_cli::WSStream;
+use crate::types::WsStream;
 use async_trait::async_trait;
 use futures::Future;
 use serde::de::DeserializeOwned;
 use std::pin::Pin;
+
+use crate::client::HttpManager;
+use tokio_tungstenite::connect_async;
 use url::Url;
 use v8_inspector_api_types::http_methods::WebSocketConnectionInfo;
 
@@ -28,8 +30,9 @@ impl Manager {
     //     None
     // }
 }
+
 #[async_trait]
-impl HTTPManager for Manager {
+impl HttpManager for Manager {
     async fn get_worker_list(&self) -> Option<Vec<WebSocketConnectionInfo>> {
         if let Ok(url) = self.url.join("json") {
             match fetch::<Vec<WebSocketConnectionInfo>>(url).await {
@@ -42,7 +45,7 @@ impl HTTPManager for Manager {
     }
 
     /// get websocket client from info given by asynchronous closure.
-    async fn get_ws_cli<F>(&self, selector: F) -> Option<WSStream>
+    async fn get_ws_cli<F>(&self, selector: F) -> Option<WsStream>
     where
         F: Fn(
                 Vec<WebSocketConnectionInfo>,
@@ -53,10 +56,10 @@ impl HTTPManager for Manager {
         if let Some(processes) = self.get_worker_list().await {
             println!("{:?}", processes);
             return if let Some(p) = selector(processes).await {
-                let a = WSStream::get_stream(p.clone().web_socket_debugger_url)
+                connect_async(p.clone().web_socket_debugger_url)
                     .await
-                    .ok();
-                a
+                    .ok()
+                    .map(|x| WsStream::new(x.0))
             } else {
                 None
             };

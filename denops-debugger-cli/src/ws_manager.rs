@@ -1,22 +1,18 @@
-use crate::{
-    external::{
-        spawn,
-        ws_cli::{Message, WSStream},
-        JoinHandle,
-    },
-    log_debug, log_error,
-};
+use crate::types::WsStream;
+use crate::{log_debug, log_error};
 use futures::stream::SplitStream;
 use futures_util::sink::Sink;
 use futures_util::stream::Stream;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use std::error::Error;
 use std::fmt;
-use std::ops::Deref;
+use tokio::spawn;
 use tokio::sync::watch::Receiver;
+use tokio::task::JoinHandle;
+use tungstenite::Message;
 use v8_inspector_api_types::messages::Message as Msg;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Command {
     Init,
     Msg(String),
@@ -40,17 +36,17 @@ impl fmt::Display for WebsocketManagerError {
 impl Error for WebsocketManagerError {}
 
 impl WebSocketManager {
-    pub fn new(stream: WSStream, rx: Receiver<Command>) -> Self {
+    pub fn new(stream: WsStream, rx: Receiver<Command>) -> Self {
         let (reader, writer) = create_ws_resolver(stream, rx);
         WebSocketManager { reader, writer }
     }
 }
 
 fn create_ws_resolver(
-    stream: WSStream,
+    stream: WsStream,
     rx: Receiver<Command>,
 ) -> (tokio::task::JoinHandle<()>, tokio::task::JoinHandle<()>) {
-    let (writer, reader) = stream.inner().split();
+    let (writer, reader) = stream.into_stream().split();
 
     // create thread to manage sending message
     let rx1 = rx.clone();
@@ -105,13 +101,8 @@ async fn reader_process<S: Stream<Item = Result<T, E>> + Unpin, T: ToString, E>(
             }
         }
         // check received shutdown message or not.
-        match *shutdown_rx.borrow() {
-            Command::Terminate => {
-                break 'outer;
-            }
-            _ => {
-                log_debug!("waiting ...")
-            }
+        if let Command::Terminate = *shutdown_rx.borrow() {
+            break 'outer;
         }
     }
     Ok(())
@@ -125,27 +116,23 @@ async fn writer_process(
         let data = rx.borrow().clone();
         // write message
         match data {
-            Command::Msg(data) => match writer.send(data.into()).await {
-                Ok(_) => {}
-                Err(_) => {
+            Command::Msg(data) => {
+                if writer.send(data.into()).await.is_err() {
                     return Err(WebsocketManagerError {
                         msg: "Error caused when writing stream".to_string(),
                     });
                 }
-            },
+            }
             Command::Terminate => {
                 break;
             }
             _ => {}
         }
     }
-    match writer.close().await {
-        Ok(_) => {}
-        Err(_) => {
-            return Err(WebsocketManagerError {
-                msg: "Error occurred in closing websocket!".to_string(),
-            })
-        }
+    if writer.close().await.is_err() {
+        return Err(WebsocketManagerError {
+            msg: "Error occurred in closing websocket!".to_string(),
+        });
     }
     Ok(())
 }
